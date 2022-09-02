@@ -2,7 +2,7 @@
 ## General info
 This bundle contains everything necessary to code an application for Shoper. It gives the possibility to use both the OAuth system as well as the user / password. It is not official code provided by the Shoper software developers.
 Current version:
-> 1.0.3
+> 1.0.0
 
 ## Table of contents
 * [Technologies](#technologies)
