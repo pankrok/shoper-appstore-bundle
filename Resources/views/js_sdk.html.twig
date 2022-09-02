@@ -1,0 +1,43 @@
+{% block js_sdk %}
+ <script src="{{ shoper_js_sdk }}"></script>
+    <script>
+        (function () {
+            'use strict';
+            let styles;
+            if (localStorage.getItem('newStyles')) {
+                styles = JSON.parse(localStorage.getItem('newStyles'));
+                injectStyles(styles);
+            }
+
+            window.shopAppInstance = new ShopApp(function (app) {
+                app.init(null, function (params, app) {
+                    if (localStorage.getItem('newStyles') === null) {
+                        injectStyles(params.newStyles);
+                    }
+                    localStorage.setItem('newStyles', JSON.stringify(params.newStyles));
+
+                    app.show(null, function () {
+                        app.adjustIframeSize();
+                    });
+                }, function (errmsg, app) {
+                    alert(errmsg);
+                });
+            }, true);
+
+            function injectStyles (styles) {
+                let i;
+                let el;
+                let sLength;
+
+                sLength = styles.length;
+                for (i = 0; i < sLength; ++i) {
+                    el = document.createElement('link');
+                    el.rel = 'stylesheet';
+                    el.type = 'text/css';
+                    el.href = styles[i];
+                    document.getElementsByTagName('head')[0].appendChild(el);
+                }
+            }
+        }());
+    </script>
+{% endblock %}

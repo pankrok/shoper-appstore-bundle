@@ -1,0 +1,7 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    globals:
+        shoperjsdk: 'https://dcsaascdn.net/js/dc-sdk-1.0.5.min.js'
+when@test:
+    twig:
+        strict_variables: true
