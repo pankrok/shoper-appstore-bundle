@@ -1,0 +1,5 @@
+appstore:
+    appId: appId    
+    appSecret: appSecret
+    appstoreSecret: appstoreSecret
+    debug: false

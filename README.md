@@ -45,6 +45,7 @@ php bin/console doctrine:migrations:migrate
 * [Billing system](docs/BILLING.md) 
 * [ShoperController](docs/SHOPERCONTROLLER.md)
 * [Webhook](docs/WEBHOOK.md)
+* [SymfonyEvents](docs/EVENTS.md)
 * [iframe Init](docs/IFRAME.md)
 * [Aurora forms](docs/AURORAFORMS.md)
 * [Twig filters](docs/TWIGFILTERS.md)

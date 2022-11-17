@@ -26,6 +26,11 @@ class Subscriptions
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $expires_at;
+    
+    public function __toString()
+    {
+        return $this->id;
+    }
 
     public function getId(): ?int
     {

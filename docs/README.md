@@ -28,7 +28,7 @@ composer require pankrok/shoper-appstore-bundle "^1.0.0"
 
 * create appstore.yaml in config/packages and fill in the data:
 ```yaml
-appstore:
+shoper_appstore:
     appId: appId    
     appSecret: appSecret
     appstoreSecret: appstoreSecret

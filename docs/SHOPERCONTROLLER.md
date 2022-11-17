@@ -23,7 +23,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Pankrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
 
 
 class IndexController extends AbstractController
@@ -51,7 +51,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Pankrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
 
 
 class IndexController extends AbstractController
@@ -90,7 +90,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Pankrok\ShoperAppstoreBundle\Controller\AppController;
+use PanKrok\ShoperAppstoreBundle\Controller\AppController;
 
 
 class IndexController extends AbstractController
@@ -136,7 +136,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Pankrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
 
 
 class IndexController extends AbstractController
@@ -172,7 +172,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Pankrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
 
 
 class IndexController extends AbstractController

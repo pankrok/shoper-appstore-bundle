@@ -67,7 +67,7 @@ class Shops
     
     public function __toString()
     {
-        return $this->shop;
+        return $this->shop_url;
     }
 
     public function getId(): ?int

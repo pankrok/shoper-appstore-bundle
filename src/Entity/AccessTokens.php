@@ -41,6 +41,11 @@ class AccessTokens
      * @ORM\Column(type="string", length=50, nullable=true)
      */
     private $refresh_token;
+    
+    public function __toString()
+    {
+        return $this->id;
+    }
 
     public function getId(): ?int
     {
