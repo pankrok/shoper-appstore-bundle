@@ -6,6 +6,7 @@ use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ApiController
 {
@@ -14,14 +15,16 @@ class ApiController
     protected $params;
     protected $shopUrl = null;
     protected $twig;
+    protected $em;
 
-    public function __construct(ParameterBagInterface $container, ShopsRepository $shopsRepository)
+    public function __construct(ParameterBagInterface $container, ShopsRepository $shopsRepository, EntityManagerInterface $em)
     {
         $this->apiOptions = $container->get('appstore');
         $this->shopsRepository = $shopsRepository;
         if (isset($this->apiOptions['shopurl'])) {
             $this->shopUrl = $this->apiOptions['shopurl'];
         }
+        $this->em = $em;
     }
 
     public function __get($property)
@@ -41,6 +44,7 @@ class ApiController
 
     public function setParams(array $params, bool $checkHash = true): void
     {
+        
         if (isset($params['shop'])) {
             $this->params = $params;
             if (false === $this->checkHash($checkHash)) {
@@ -50,7 +54,8 @@ class ApiController
             $shop = $this->shopsRepository->findOneBy(['shop' => $params['shop']]);
             $this->shopUrl = $shop->getShopUrl();
             $token = $shop->getAccessTokens();
-
+        
+        
             $options = [
                 'options' => $this->apiOptions,
                 'entrypoint' => $this->shopUrl,
@@ -58,6 +63,23 @@ class ApiController
 
             $this->client = Client::factory(Client::ADAPTER_OAUTH, $options);
             $this->client->setToken($token->getAccessToken());
+            $this->client->setRefreshToken($token->getRefreshToken());
+            $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+            
+            if ($this->client->isExpiredFromTimestamp(time() + (60*60*24 * 1))) {
+                $refreshedToken = $this->client->refresh();
+                $refreshedToken = $refreshedToken->toArray();
+
+                $token->setExpiresAt(new \DateTime('now + 30days'));
+                $token->setCreatedAt(new \DateTime('now'));
+                $token->setAccessToken($refreshedToken['access_token']);
+                $token->setRefreshToken($refreshedToken['refresh_token']);
+                $this->em->flush($token);
+                
+                $this->client->setToken($token->getAccessToken());
+                $this->client->setRefreshToken($token->getRefreshToken());
+                $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+            }
         } 
     }
     

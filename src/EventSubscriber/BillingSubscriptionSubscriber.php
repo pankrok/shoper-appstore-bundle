@@ -27,7 +27,7 @@ class BillingSubscriptionSubscriber implements EventSubscriberInterface
         if (($shop = $this->shopsRepository->findOneBy(['shop' => $payload['shop']])) !== null) {
             $subscribtion = new Subscriptions();
             $subscribtion->setShop($shop);
-            $subscribtion->setCreatedAt(new \Datetime($payload['subscription_end_time']));
+            $subscribtion->setExpiresAt(new \Datetime($payload['subscription_end_time']));
             $this->em->persist($subscribtion);
             $this->em->flush();
         } else {

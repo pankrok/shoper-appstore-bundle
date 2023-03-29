@@ -107,6 +107,10 @@ class ResourceModel extends RequestModel implements ResourceInterface
         if ($this->bulk) {
             return $this->prepareBulk('POST');
         }
+        
+        if(isset($this->object) && $this->url === 'metafields') {
+            $this->url .= '/'.$this->object;
+        }
 
         $request = $this->prepareRequest('POST');
 

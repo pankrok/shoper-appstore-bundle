@@ -13,6 +13,8 @@ class Bearer extends AbstractController implements BearerInterface
     protected $client;
     protected $entrypoint;
     protected $token;
+    protected $refreshToken;
+    protected $expired;
     protected $response = null;
 
     public function __construct(array $options = [])
@@ -71,5 +73,43 @@ class Bearer extends AbstractController implements BearerInterface
     public function getToken(): ?string
     {
         return $this->token;
+    }
+    
+    public function setRefreshToken(string $refreshToken): void
+    {
+        $this->refreshToken = $refreshToken;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+    
+    
+    public function isExpired(): bool
+    {
+        if ($this->expired < time()) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public function isExpiredFromTimestamp(int $timestamp) {
+        if ($this->expired < $timestamp) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public function setExpired(int $time): void
+    {
+        $this->expired = $time;
+    }
+
+    public function getExpired(): ?int
+    {
+        return $this->expired;
     }
 }

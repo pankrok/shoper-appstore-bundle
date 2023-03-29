@@ -8,7 +8,7 @@ use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
 final class Metafield extends ResourceModel
 {
     protected $url = 'metafields';
-    protected $type = 'system';
+    protected $object = 'system';
 
     public const TYPE_INT = 1;
     /**
@@ -24,36 +24,31 @@ final class Metafield extends ResourceModel
      */
     public const TYPE_BLOB = 4;
 
-    public function setType(string $type = 'system'): Metafield
+    public function setObject(string $object = 'system'): Metafield
     {
-        $this->type = $type;
+        $this->object = $object;
 
         return $this;
     }
 
-    public function getType(): string
+    public function getObject(): string
     {
-        return $this->type;
+        return $this->object;
     }
 
     public function get(array|int|null $body = null): ResponseModel
     {
-        if (null !== $body['type']) {
-            $this->type = $body['type'];
+        if (strlen($this->object) < 1) {
+            throw new \Exception('invalit object: ' . $this->object);
         }
 
-        $body = $body['body'];
-
-        $this->url = 'metafields/'.$this->type;
-        if (!empty($body) && !is_int($body)) {
-            $this->setBody($body);
-        }
-
+        $this->url = 'metafields/'.$this->object;
+       
         $request = $this->prepareRequest('GET');
         if (is_int($body)) {
             $request['url'] .= '/'.$body;
         }
-
+        
         return $this->client->request($request);
     }
 }

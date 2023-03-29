@@ -26,4 +26,8 @@ class BasicAuth extends Bearer
 
         return $response;
     }
+    
+    public function refresh(string $code) {
+        throw new \Error('Not implemented');        
+    }
 }
