@@ -80,7 +80,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->page;
     }
 
-    public function get(array|int|null $body = null): ResponseModel
+    public function get(array|int|null $body = null): ResponseModel|array
     {
         if (!empty($body) && !is_int($body)) {
             $this->setBody($body);
@@ -98,7 +98,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->client->request($request);
     }
 
-    public function post(array $body = []): ResponseModel
+    public function post(array $body = []): ResponseModel|array
     {
         if (!empty($body)) {
             $this->setBody($body);
@@ -117,7 +117,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->client->request($request);
     }
 
-    public function put(int $id, array $body): ResponseModel
+    public function put(int $id, array $body): ResponseModel|array
     {
         if (!empty($body)) {
             $this->setBody($body);
@@ -133,7 +133,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->client->request($request);
     }
 
-    public function delete(array|int $body): ResponseModel
+    public function delete(array|int $body): ResponseModel|array
     {
         if (!empty($body) && !is_int($body)) {
             $this->setBody($body);
