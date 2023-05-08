@@ -11,8 +11,8 @@ interface ResourceInterface
     public function getLimit(): int;
     public function setPage(int $page): ResourceModel;
     public function getPage(): int;
-    public function get(array|int|null $body = null): ResponseModel;
-    public function post(array $body = []): ResponseModel;
-    public function put(int $id, array $body): ResponseModel;
-    public function delete(array|int $body): ResponseModel;    
+    public function get(array|int|null $body = null): ResponseModel|array;
+    public function post(array $body = []): ResponseModel|array;
+    public function put(int $id, array $body): ResponseModel|array;
+    public function delete(array|int $body): ResponseModel|array;    
 }
