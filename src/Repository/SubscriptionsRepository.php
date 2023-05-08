@@ -2,7 +2,7 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Repository;
 
-use App\Shoper\Entity\Subscriptions;
+use PanKrok\ShoperAppstoreBundle\Entity\Subscriptions;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
