@@ -6,7 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 use PanKrok\ShoperAppstoreBundle\Entity\AccessTokens;
 use PanKrok\ShoperAppstoreBundle\Entity\Shops;
-use PanKrok\ShoperAppstoreBundle\EventListener\InstallEvent;
+use PanKrok\ShoperAppstoreBundle\Events\InstallEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -17,12 +18,15 @@ class InstallSubscriber implements EventSubscriberInterface
     protected $em;
     protected $tokensEntity;
     protected $shopsRepository;
+    protected $dispatcher;
 
     public function __construct(
+        EventDispatcherInterface $dispatcher,
         EntityManagerInterface $entityManager,
         ParameterBagInterface $container,
         ShopsRepository $shopsRepository,
     ) {
+        $this->dispatcher = $dispatcher;
         $this->em = $entityManager;
         $this->config = $container->get('appstore');
         $this->shopsRepository = $shopsRepository;
@@ -52,7 +56,7 @@ class InstallSubscriber implements EventSubscriberInterface
         } else {
             $shop = new Shops();
             $shop->setInstalled(true);
-            $shop->setCreatedAt(new \DateTime('now'));
+            $shop->setCreatedAt(new \DatetimeImmutable('now'));
             $shop->setShop($payload['shop']);
             $shop->setShopUrl($payload['shop_url']);
             $shop->setVersion($payload['application_version']);
@@ -63,13 +67,17 @@ class InstallSubscriber implements EventSubscriberInterface
 
         $token = new AccessTokens();
         $token->setShop($shop);
-        $token->setExpiresAt(new \DateTime('now + 30days'));
-        $token->setCreatedAt(new \DateTime('now'));
+        $token->setExpiresAt(new \DatetimeImmutable('now + 30days'));
+        $token->setCreatedAt(new \DatetimeImmutable('now'));
         $token->setAccessToken($response['access_token']);
         $token->setRefreshToken($response['refresh_token']);
 
         $this->em->persist($token);
         $this->em->flush();
+
+        $eventName = '\\PanKrok\\ShoperAppstoreBundle\\EventListener\\PostInstallEvent';
+        $event = new $eventName($shop);
+        $this->dispatcher->dispatch($event, $eventName::NAME);
     }
 
     public static function getSubscribedEvents(): array

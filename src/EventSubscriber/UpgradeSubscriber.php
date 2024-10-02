@@ -5,7 +5,7 @@ namespace PanKrok\ShoperAppstoreBundle\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 use PanKrok\ShoperAppstoreBundle\Entity\AccessTokens;
-use PanKrok\ShoperAppstoreBundle\EventListener\UpgradeEvent;
+use PanKrok\ShoperAppstoreBundle\Events\UpgradeEvent;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -58,8 +58,8 @@ class UpgradeSubscriber implements EventSubscriberInterface
 
         $token = new AccessTokens();
         $token->setShop($shop);
-        $token->setExpiresAt(new \DateTime('now + 30days'));
-        $token->setCreatedAt(new \DateTime('now'));
+        $token->setExpiresAt(new \DatetimeImmutable('now + 30days'));
+        $token->setCreatedAt(new \DatetimeImmutable('now'));
         $token->setAccessToken($response['access_token']);
         $token->setRefreshToken($response['refresh_token']);
 

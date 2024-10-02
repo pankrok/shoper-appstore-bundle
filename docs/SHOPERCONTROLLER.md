@@ -2,11 +2,11 @@
 
 ## Index
 * [Creating controller](#creating-controller)
-* [Single request](#single-request)
-* [Bulk Request](#bulk-Request)
+* [Get request](#single-request)
 * [Insert object](#insert-object)
 * [Updating object](#updating-object)
-* [deleting object](#deleting-object)
+* [Deleting object](#deleting-object)
+* [Bulk Request](#bulk-Request)
 
 ## Creating controller
 ```bash
@@ -14,7 +14,7 @@
 ```
 maker will create a controller that allows you to manage requests sent to the store as well as receive data, below is an example of the use of a controler. 
 
-## Single request
+## Get request
 ```php
 <?php
 
@@ -32,44 +32,6 @@ class IndexController extends AbstractController
     public function index(ApiController $api): Response
     {
         $data = $api->product->get();
-        
-        return $this->renderForm('index/index.html.twig', [
-            'controller_name' => 'IndexController',
-            'data' => $data,
-        ]);
-    }
-}
-
-```
-
-## Bulk Request
-```php
-<?php
-
-namespace App\Controller;
-
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
-
-
-class IndexController extends AbstractController
-{
-    #[Route('/', name: 'index')]
-    public function index(ApiController $api): Response
-    {
-        $data = $api
-                    ->bulk
-                        ->product
-                            ->setLimit(1)
-                            ->setPage(1)
-                            ->get()
-                        ->product
-                            ->setLimit(1)
-                            ->setPage(2)
-                            ->get()
-                        ->send();
         
         return $this->renderForm('index/index.html.twig', [
             'controller_name' => 'IndexController',
@@ -144,6 +106,7 @@ class IndexController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(ApiController $api): Response
     {
+        $productId = 1;
         $data = [
             'stock' => [
                 'price' => 10,
@@ -151,7 +114,7 @@ class IndexController extends AbstractController
                 'stock' => 10
             ],
         ];
-        $result = $api->product->put($data);
+        $result = $api->product->put($productId, $data);
         if($result){
             echo 'A product has been successfully updated';
         }
@@ -190,4 +153,42 @@ class IndexController extends AbstractController
     }
 }
 
+```
+
+## Bulk Request
+> Bulk can use all shoper RestApi methods: _get(?id) post(?$data) put($id, $data) depete($id)_
+```php
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
+
+
+class IndexController extends AbstractController
+{
+    #[Route('/', name: 'index')]
+    public function index(ApiController $api): Response
+    {
+        $data = $api
+                    ->bulk
+                        ->product
+                            ->setLimit(1)
+                            ->setPage(1)
+                            ->get()
+                        ->product
+                            ->setLimit(1)
+                            ->setPage(2)
+                            ->get()
+                        ->send();
+        
+        return $this->renderForm('index/index.html.twig', [
+            'controller_name' => 'IndexController',
+            'data' => $data,
+        ]);
+    }
+}
 ```

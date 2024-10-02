@@ -3,7 +3,7 @@
 namespace PanKrok\ShoperAppstoreBundle\EventSubscriber;
 
 use Doctrine\ORM\EntityManagerInterface;
-use PanKrok\ShoperAppstoreBundle\EventListener\UninstallEvent;
+use PanKrok\ShoperAppstoreBundle\Events\UninstallEvent;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

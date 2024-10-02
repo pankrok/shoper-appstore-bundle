@@ -2,72 +2,58 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Entity;
 
+use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 
-/**
- * @ORM\Entity(repositoryClass=ShopsRepository::class)
- */
+#[ORM\Entity(repositoryClass: ShopsRepository::class)]
 class Shops
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $created_at = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $shop = null;
+
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $shop_url = null;
+
+    #[ORM\Column(length: 11)]
+    private ?string $version = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $installed = null;
+
+    #[ORM\OneToOne(inversedBy: 'shop', cascade: ['persist', 'remove'])]
+    private ?AccessTokens $accessTokens = null;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @var Collection<int, Billings>
      */
-    private $created_at;
+    #[ORM\OneToMany(targetEntity: Billings::class, mappedBy: 'shop')]
+    private Collection $billings;
 
     /**
-     * @ORM\Column(type="string", length=128, nullable=true)
+     * @var Collection<int, Subscriptions>
      */
-    private $shop = null;
-
-    /**
-     * @ORM\Column(type="string", length=512, nullable=true)
-     */
-    private $shop_url = null;
-
-    /**
-     * @ORM\Column(type="string", length=11, nullable=true)
-     */
-    private $version = null;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $installed = 0;
-
-    /**
-     * @ORM\OneToOne(targetEntity=AccessTokens::class, mappedBy="shop", cascade={"persist", "remove"})
-     */
-    private $accessTokens;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Billings::class, mappedBy="shop")
-     */
-    private $billings;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Subscriptions::class, mappedBy="shop")
-     */
-    private $subscriptions;
+    #[ORM\OneToMany(targetEntity: Subscriptions::class, mappedBy: 'shop')]
+    private Collection $subscriptions;
 
     public function __construct()
     {
         $this->billings = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
     }
-    
+
     public function __toString()
     {
-        return $this->shop_url;
+        return $this->shop;
     }
 
     public function getId(): ?int
@@ -75,12 +61,12 @@ class Shops
         return $this->id;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): self
+    public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
 
@@ -92,7 +78,7 @@ class Shops
         return $this->shop;
     }
 
-    public function setShop(string $shop): self
+    public function setShop(?string $shop): static
     {
         $this->shop = $shop;
 
@@ -104,7 +90,7 @@ class Shops
         return $this->shop_url;
     }
 
-    public function setShopUrl(string $shop_url): self
+    public function setShopUrl(?string $shop_url): static
     {
         $this->shop_url = $shop_url;
 
@@ -116,19 +102,19 @@ class Shops
         return $this->version;
     }
 
-    public function setVersion(?string $version): self
+    public function setVersion(string $version): static
     {
         $this->version = $version;
 
         return $this;
     }
 
-    public function getInstalled(): ?bool
+    public function isInstalled(): ?bool
     {
         return $this->installed;
     }
 
-    public function setInstalled(bool $installed): self
+    public function setInstalled(?bool $installed): static
     {
         $this->installed = $installed;
 
@@ -140,42 +126,32 @@ class Shops
         return $this->accessTokens;
     }
 
-    public function setAccessTokens(?AccessTokens $accessTokens): self
+    public function setAccessTokens(?AccessTokens $accessTokens): static
     {
-        // unset the owning side of the relation if necessary
-        if (null === $accessTokens && null !== $this->accessTokens) {
-            $this->accessTokens->setShop(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if (null !== $accessTokens && $accessTokens->getShop() !== $this) {
-            $accessTokens->setShop($this);
-        }
-
         $this->accessTokens = $accessTokens;
 
         return $this;
     }
 
     /**
-     * @return Collection|Billings[]
+     * @return Collection<int, Billings>
      */
     public function getBillings(): Collection
     {
         return $this->billings;
     }
 
-    public function addBilling(Billings $billing): self
+    public function addBilling(Billings $billing): static
     {
         if (!$this->billings->contains($billing)) {
-            $this->billings[] = $billing;
+            $this->billings->add($billing);
             $billing->setShop($this);
         }
 
         return $this;
     }
 
-    public function removeBilling(Billings $billing): self
+    public function removeBilling(Billings $billing): static
     {
         if ($this->billings->removeElement($billing)) {
             // set the owning side to null (unless already changed)
@@ -188,24 +164,24 @@ class Shops
     }
 
     /**
-     * @return Collection|Subscriptions[]
+     * @return Collection<int, Subscriptions>
      */
     public function getSubscriptions(): Collection
     {
         return $this->subscriptions;
     }
 
-    public function addSubscription(Subscriptions $subscription): self
+    public function addSubscription(Subscriptions $subscription): static
     {
         if (!$this->subscriptions->contains($subscription)) {
-            $this->subscriptions[] = $subscription;
+            $this->subscriptions->add($subscription);
             $subscription->setShop($this);
         }
 
         return $this;
     }
 
-    public function removeSubscription(Subscriptions $subscription): self
+    public function removeSubscription(Subscriptions $subscription): static
     {
         if ($this->subscriptions->removeElement($subscription)) {
             // set the owning side to null (unless already changed)

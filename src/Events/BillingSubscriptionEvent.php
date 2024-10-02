@@ -1,12 +1,12 @@
 <?php
 
-namespace PanKrok\ShoperAppstoreBundle\EventListener;
+namespace PanKrok\ShoperAppstoreBundle\Events;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
-class BillingInstallEvent extends Event
+class BillingSubscriptionEvent extends Event
 {
-    public const NAME = 'appstore.billing_install';
+    public const NAME = 'appstore.billing_subscription';
     protected $payload;
 
     public function __construct(array $payload)

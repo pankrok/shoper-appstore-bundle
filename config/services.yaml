@@ -6,7 +6,7 @@ services:
     PanKrok\ShoperAppstoreBundle\:
         resource: '../src/'
         exclude:
-            - '../src/DependencyInjection/'
+          
             - '../src/Controllers/Api/'
             - '../src/Model/'
             - '../src/Maker/'

@@ -4,6 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\Controller;
 
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
+use PanKrok\ShoperAppstoreBundle\Entity\Shops;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +15,7 @@ class ApiController
     protected $apiOptions = [];
     protected $params;
     protected $shopUrl = null;
+    protected $shop = null;
     protected $twig;
     protected $em;
 
@@ -51,9 +53,9 @@ class ApiController
                 throw new \Exception('Invalid hash');
             }
 
-            $shop = $this->shopsRepository->findOneBy(['shop' => $params['shop']]);
-            $this->shopUrl = $shop->getShopUrl();
-            $token = $shop->getAccessTokens();
+            $this->shop = $this->shopsRepository->findOneBy(['shop' => $params['shop']]);
+            $this->shopUrl = $this->shop->getShopUrl();
+            $token = $this->shop->getAccessTokens();
         
         
             $options = [
@@ -70,8 +72,8 @@ class ApiController
                 $refreshedToken = $this->client->refresh();
                 $refreshedToken = $refreshedToken->toArray();
 
-                $token->setExpiresAt(new \DateTime('now + 30days'));
-                $token->setCreatedAt(new \DateTime('now'));
+                $token->setExpiresAt(new \DateTimeImmutable('now + 30days'));
+                $token->setCreatedAt(new \DateTimeImmutable('now'));
                 $token->setAccessToken($refreshedToken['access_token']);
                 $token->setRefreshToken($refreshedToken['refresh_token']);
                 $this->em->flush($token);
@@ -81,6 +83,37 @@ class ApiController
                 $this->client->setExpired($token->getExpiresAt()->getTimestamp());
             }
         } 
+    }
+
+    public function refreshShopToken(Shops $shop): void
+    {
+        $this->shopUrl = $shop->getShopUrl();
+        $token = $shop->getAccessTokens();
+        $options = [
+            'options' => $this->apiOptions,
+            'entrypoint' => $this->shopUrl,
+        ];
+
+        $this->client = Client::factory(Client::ADAPTER_OAUTH, $options);
+        $this->client->setToken($token->getAccessToken());
+        $this->client->setRefreshToken($token->getRefreshToken());
+        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        
+        if ($this->client->isExpiredFromTimestamp(time() + (60*60*24 * 1))) {
+            $refreshedToken = $this->client->refresh();
+            $refreshedToken = $refreshedToken->toArray();
+
+            $token->setExpiresAt(new \DateTimeImmutable('now + 30days'));
+            $token->setCreatedAt(new \DateTimeImmutable('now'));
+            $token->setAccessToken($refreshedToken['access_token']);
+            $token->setRefreshToken($refreshedToken['refresh_token']);
+            $this->em->flush($token);
+            
+            $this->client->setToken($token->getAccessToken());
+            $this->client->setRefreshToken($token->getRefreshToken());
+            $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        }
+
     }
     
     public function setBasicAuth(string $url = null, array $basicAuth = []): BearerInterface 
@@ -126,6 +159,17 @@ class ApiController
     public function getShopUrl(): ?string
     {
         return $this->shopUrl;
+    }
+
+    public function setShop(Shops $shop)
+    {
+        $this->setShopUrl($shop->getShopUrl());
+        $this->shop = $shop;
+    }
+
+    public function getShop(): ?Shops
+    {
+        return $this->shop;
     }
 
     public function getAppId(): bool

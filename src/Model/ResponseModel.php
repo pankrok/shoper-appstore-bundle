@@ -30,7 +30,7 @@ class ResponseModel
         return $this->body;
     }
 
-    public function getBodyArray()
+    public function toArray()
     {
         try {
             $return = json_decode($this->body, true);
@@ -39,6 +39,11 @@ class ResponseModel
         }
 
         return $return;
+    }
+
+    public function getBodyArray()
+    {
+        return $this->toArray();
     }
 
     public function getAll()

@@ -1,6 +1,6 @@
 <?php
 
-namespace PanKrok\ShoperAppstoreBundle\EventListener;
+namespace PanKrok\ShoperAppstoreBundle\Events;
 
 use Symfony\Contracts\EventDispatcher\Event;
 

@@ -1,7 +1,7 @@
 AppstoreBundle allows you to log in using the data generated when creating the application
 ```yaml
 # config/packages/appstore.yaml
-appstore:
+shoper_appstore:
     appId: appId    
     appSecret: appSecret
     appstoreSecret: appstoreSecret
@@ -9,7 +9,7 @@ appstore:
 or by creating an administrator in the store using his login and password (webapi access required)
 ```yaml
 # config/packages/appstore.yaml
-appstore:
+shoper_appstore:
     username: adminUsername
     password: adminPassword
     shopurl: https://shopurl.com
@@ -22,13 +22,13 @@ in setBasicAuth method, define the token with the method setToken(string $ token
     #[Route('/index', name: 'index')]
     public function index(ApiController $api): Response
     {
-        $token = $api->setBasicAuth()->auth();
+        $api->setBasicAuth()->auth();
         /* 
         * you can use toArray() method to recive array body of shop response:
         * array(3) { ["access_token"]=> string(40) "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ["expires_in"]=> int(2592000) ["token_type"]=> string(6) "bearer" } 
         */
         $data = $api->product->get()->getBodyArray();
-        $data[] = $api->getClient()->getToken();
+        $$token = $api->getClient()->getToken();
 
         return $this->renderForm('index/index.html.twig', [
             'controller_name' => 'IndexController',
@@ -41,7 +41,7 @@ setBasicAuth() allows you to use the SDK without putting any data into the YAML 
 ```php
 <?php
 
-   #[Route('/index', name: 'index')]
+    #[Route('/index', name: 'index')]
     public function index(ApiController $api): Response
     {
         $options = [
@@ -49,15 +49,14 @@ setBasicAuth() allows you to use the SDK without putting any data into the YAML 
             'password' => 'bar',
         ];
         $url = 'https://foo.bar';
-        $token = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
         
-        $api->setBasicAuth($url, $options)->setToken($token);
+        $api->setBasicAuth($url, $options)->auth();
         $data = $api->product->get()->getBodyArray();
         $data[] = $api->getClient()->getToken();
 
         return $this->renderForm('index/index.html.twig', [
             'controller_name' => 'IndexController',
-            'r' => $data
+            'response' => $data
         ]);
     }
 ```
