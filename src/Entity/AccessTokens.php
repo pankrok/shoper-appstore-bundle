@@ -2,46 +2,32 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use PanKrok\ShoperAppstoreBundle\Repository\AccessTokensRepository;
+use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=AccessTokensRepository::class)
- */
+#[ORM\Entity(repositoryClass: AccessTokensRepository::class)]
 class AccessTokens
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Shops::class, inversedBy="accessTokens")
-     */
-    private $shop;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $expires_at = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $expires_at;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $created_at = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $created_at;
+    #[ORM\Column(length: 64)]
+    private ?string $access_token = null;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
-    private $access_token;
+    #[ORM\Column(length: 64)]
+    private ?string $refresh_token = null;
 
-    /**
-     * @ORM\Column(type="string", length=50, nullable=true)
-     */
-    private $refresh_token;
-    
+    #[ORM\OneToOne(mappedBy: 'accessTokens', cascade: ['persist', 'remove'])]
+    private ?Shops $shop = null;
+
     public function __toString()
     {
         return $this->id;
@@ -52,36 +38,31 @@ class AccessTokens
         return $this->id;
     }
 
-    public function getShop(): ?Shops
+    public function setId(int $id): static
     {
-        return $this->shop;
-    }
-
-    public function setShop(?Shops $shop): self
-    {
-        $this->shop = $shop;
+        $this->id = $id;
 
         return $this;
     }
 
-    public function getExpiresAt(): ?\DateTimeInterface
+    public function getExpiresAt(): ?\DateTimeImmutable
     {
         return $this->expires_at;
     }
 
-    public function setExpiresAt(?\DateTimeInterface $expires_at): self
+    public function setExpiresAt(?\DateTimeImmutable $expires_at): static
     {
         $this->expires_at = $expires_at;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    public function setCreatedAt(?\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
 
@@ -93,7 +74,7 @@ class AccessTokens
         return $this->access_token;
     }
 
-    public function setAccessToken(?string $access_token): self
+    public function setAccessToken(string $access_token): static
     {
         $this->access_token = $access_token;
 
@@ -105,9 +86,31 @@ class AccessTokens
         return $this->refresh_token;
     }
 
-    public function setRefreshToken(?string $refresh_token): self
+    public function setRefreshToken(string $refresh_token): static
     {
         $this->refresh_token = $refresh_token;
+
+        return $this;
+    }
+
+    public function getShop(): ?Shops
+    {
+        return $this->shop;
+    }
+
+    public function setShop(?Shops $shop): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($shop === null && $this->shop !== null) {
+            $this->shop->setAccessTokens(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($shop !== null && $shop->getAccessTokens() !== $this) {
+            $shop->setAccessTokens($this);
+        }
+
+        $this->shop = $shop;
 
         return $this;
     }

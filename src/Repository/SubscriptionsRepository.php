@@ -7,10 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Subscriptions|null find($id, $lockMode = null, $lockVersion = null)
- * @method Subscriptions|null findOneBy(array $criteria, array $orderBy = null)
- * @method Subscriptions[]    findAll()
- * @method Subscriptions[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<Subscriptions>
  */
 class SubscriptionsRepository extends ServiceEntityRepository
 {
@@ -19,32 +16,28 @@ class SubscriptionsRepository extends ServiceEntityRepository
         parent::__construct($registry, Subscriptions::class);
     }
 
-    // /**
-    //  * @return Subscriptions[] Returns an array of Subscriptions objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    //    /**
+    //     * @return Subscriptions[] Returns an array of Subscriptions objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('s')
+    //            ->andWhere('s.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('s.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
 
-    /*
-    public function findOneBySomeField($value): ?Subscriptions
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+    //    public function findOneBySomeField($value): ?Subscriptions
+    //    {
+    //        return $this->createQueryBuilder('s')
+    //            ->andWhere('s.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }

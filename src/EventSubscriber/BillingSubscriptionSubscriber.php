@@ -4,7 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\EventSubscriber;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PanKrok\ShoperAppstoreBundle\Entity\Subscriptions;
-use PanKrok\ShoperAppstoreBundle\EventListener\BillingSubscriptionEvent;
+use PanKrok\ShoperAppstoreBundle\Events\BillingSubscriptionEvent;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -27,7 +27,7 @@ class BillingSubscriptionSubscriber implements EventSubscriberInterface
         if (($shop = $this->shopsRepository->findOneBy(['shop' => $payload['shop']])) !== null) {
             $subscribtion = new Subscriptions();
             $subscribtion->setShop($shop);
-            $subscribtion->setExpiresAt(new \Datetime($payload['subscription_end_time']));
+            $subscribtion->setExpiresAt(new \DatetimeImmutable($payload['subscription_end_time']));
             $this->em->persist($subscribtion);
             $this->em->flush();
         } else {

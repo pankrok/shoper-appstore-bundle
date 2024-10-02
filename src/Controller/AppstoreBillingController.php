@@ -6,7 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-class BillingController
+class AppstoreBillingController
 {
     protected $dispatcher;
     protected $config;

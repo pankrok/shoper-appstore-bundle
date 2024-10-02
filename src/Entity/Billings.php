@@ -2,35 +2,22 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use PanKrok\ShoperAppstoreBundle\Repository\BillingsRepository;
+use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=BillingsRepository::class)
- */
+#[ORM\Entity(repositoryClass: BillingsRepository::class)]
 class Billings
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Shops::class, inversedBy="billings")
-     */
-    private $shop;
+    #[ORM\ManyToOne(inversedBy: 'billings')]
+    private ?Shops $shop = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $created_at;
-    
-    public function __toString()
-    {
-        return $this->id;
-    }
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $created_at = null;
 
     public function getId(): ?int
     {
@@ -42,19 +29,19 @@ class Billings
         return $this->shop;
     }
 
-    public function setShop(?Shops $shop): self
+    public function setShop(?Shops $shop): static
     {
         $this->shop = $shop;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    public function setCreatedAt(?\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
 

@@ -2,16 +2,24 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Maker;
 
-use Doctrine\Common\Annotations\Annotation;
+use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
-use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
 use Symfony\Bundle\MakerBundle\Str;
+use Symfony\Bundle\MakerBundle\Util\PhpCompatUtil;
+use Symfony\Bundle\MakerBundle\Util\UseStatementGenerator;
+use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
 
 final class MakeShoperBillingController extends AbstractMaker
 {
@@ -58,9 +66,9 @@ final class MakeShoperBillingController extends AbstractMaker
 
     public function configureDependencies(DependencyBuilder $dependencies)
     {
-        $dependencies->addClassDependency(
-            Annotation::class,
-            'doctrine/annotations'
-        );
+        // $dependencies->addClassDependency(
+        //     Annotation::class,
+        //     'doctrine/annotations'
+        // );
     }
 }

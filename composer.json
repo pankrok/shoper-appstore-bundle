@@ -1,39 +1,39 @@
 {
-    "name": "pankrok/shoper-appstore-bundle",
+    "name": "pankrok/shoper-appstore-bundle-64",
     "type": "symfony-bundle",
+    "version": "0.1.6",
     "description": "This bundle provides Shoper appstore SDK",
     "keywords": ["shoper", "appstore", "api"],
     "license": "MIT",
     "authors": [
-        {
+        { 
             "name": "Jerzy Róg"
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "doctrine/doctrine-bundle": "^2.4",
-        "doctrine/doctrine-migrations-bundle": "^3.1",
-        "doctrine/orm": "^2.10",
-        "exercise/htmlpurifier-bundle": "^3.1",
-        "sensio/framework-extra-bundle": "^6.2",
-        "symfony/console": "5.4.*",
-        "symfony/dotenv": "5.4.*",
+        "php": ">=8.1",
+        "doctrine/dbal": "^3",
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/doctrine-migrations-bundle": "^3.3",
+        "doctrine/orm": "^3.2",
+        "exercise/htmlpurifier-bundle": "^4.0",
+        "symfony/console": "6.4.*",
+        "symfony/dotenv": "6.4.*",
         "symfony/flex": "1.17|^2",
-        "symfony/framework-bundle": "5.4.*",
-        "symfony/http-client": "5.4.*",
+        "symfony/framework-bundle": "6.4.*",
+        "symfony/http-client": "6.4.*",
         "symfony/monolog-bundle": "^3.7",
-        "symfony/proxy-manager-bridge": "5.4.*",
-        "symfony/runtime": "5.4.*",
-        "symfony/twig-bundle": "5.4.*",
-        "symfony/yaml": "5.4.*",
+        "symfony/runtime": "6.4.*",
+        "symfony/twig-bundle": "6.4.*",
+        "symfony/yaml": "6.4.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
-        "symfony/debug-bundle": "5.4.*",
+        "symfony/debug-bundle": "6.4.*",
         "symfony/maker-bundle": "^1.34",
-        "symfony/stopwatch": "5.4.*",
-        "symfony/web-profiler-bundle": "5.4.*"
+        "symfony/stopwatch": "6.4.*",
+        "symfony/web-profiler-bundle": "6.4.*"
     },
     "config": {
         "sort-packages": true
