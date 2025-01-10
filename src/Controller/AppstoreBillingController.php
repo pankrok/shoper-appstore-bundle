@@ -24,7 +24,7 @@ class AppstoreBillingController
         }
         
         if (true === self::checkHash($request, $this->config['appstoreSecret'])) {
-            $eventName = '\\PanKrok\\ShoperAppstoreBundle\\EventListener\\'.$this->camelCase($request['action']).'Event';
+            $eventName = '\\PanKrok\\ShoperAppstoreBundle\\Events\\'.$this->camelCase($request['action']).'Event';
             if (!class_exists($eventName)) {
                 throw new \Exception('Event for action "'.$request['action'].'" not found.');
             }

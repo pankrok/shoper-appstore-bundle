@@ -75,7 +75,7 @@ class InstallSubscriber implements EventSubscriberInterface
         $this->em->persist($token);
         $this->em->flush();
 
-        $eventName = '\\PanKrok\\ShoperAppstoreBundle\\EventListener\\PostInstallEvent';
+        $eventName = '\\PanKrok\\ShoperAppstoreBundle\\Events\\PostInstallEvent';
         $event = new $eventName($shop);
         $this->dispatcher->dispatch($event, $eventName::NAME);
     }
