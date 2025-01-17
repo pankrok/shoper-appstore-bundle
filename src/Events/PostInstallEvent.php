@@ -15,7 +15,7 @@ class PostInstallEvent extends Event
         $this->shop = $shop;
     }
 
-    public function getShop(): Shop
+    public function getShop(): Shops
     {
         return $this->shop;
     }
