@@ -30,7 +30,7 @@ class Shops
     #[ORM\Column(nullable: true)]
     private ?bool $installed = null;
 
-    #[ORM\OneToOne(inversedBy: 'shop', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'shop', cascade: ['persist', 'remove'])]
     private ?AccessTokens $accessTokens = null;
 
     /**

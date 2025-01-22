@@ -25,7 +25,7 @@ class AccessTokens
     #[ORM\Column(length: 64)]
     private ?string $refresh_token = null;
 
-    #[ORM\OneToOne(mappedBy: 'accessTokens', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'accessTokens', cascade: ['persist', 'remove'])]
     private ?Shops $shop = null;
 
     public function __toString()
