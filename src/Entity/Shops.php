@@ -128,6 +128,16 @@ class Shops
 
     public function setAccessTokens(?AccessTokens $accessTokens): static
     {
+        // unset the owning side of the relation if necessary
+        if (null === $accessTokens && null !== $this->accessTokens) {
+            $this->accessTokens->setShop(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if (null !== $accessTokens && $accessTokens->getShop() !== $this) {
+            $accessTokens->setShop($this);
+        }
+        
         $this->accessTokens = $accessTokens;
 
         return $this;
