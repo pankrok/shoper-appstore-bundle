@@ -27,7 +27,7 @@ class BillingInstallSubscriber implements EventSubscriberInterface
 
     public function onBillingInstall($event)
     {
-        $eventName = '\\PanKrok\\ShoperAppstoreBundle\\EventListener\\PostBillingInstallEvent';
+        $eventName = '\\PanKrok\\ShoperAppstoreBundle\\Events\\PostBillingInstallEvent';
         $payload = $event->getPayload();
         if (($shop = $this->shopsRepository->findOneBy(['shop' => $payload['shop']])) !== null) {
             $billing = new Billings();

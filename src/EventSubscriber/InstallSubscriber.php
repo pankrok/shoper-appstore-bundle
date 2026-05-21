@@ -47,12 +47,13 @@ class InstallSubscriber implements EventSubscriberInterface
         }
 
         if (($shop = $this->shopsRepository->findOneBy(['shop' => $payload['shop']])) !== null) {
-            if (($token = $shop->getAccessTokens()) !== null) {
-                $this->em->remove($token);
-                $this->em->flush();
+            if (($existingToken = $shop->getAccessTokens()) !== null) {
+                $this->em->remove($existingToken);
             }
 
             $shop->setInstalled(true);
+            $shop->setShopUrl($payload['shop_url']);
+            $shop->setVersion($payload['application_version']);
         } else {
             $shop = new Shops();
             $shop->setInstalled(true);
@@ -62,16 +63,17 @@ class InstallSubscriber implements EventSubscriberInterface
             $shop->setVersion($payload['application_version']);
         }
 
-        $this->em->persist($shop);
-        $this->em->flush();
+        $expiresIn = isset($response['expires_in']) ? (int) $response['expires_in'] : 7776000;
+        $expiresAt = new \DatetimeImmutable('@' . (time() + $expiresIn));
 
         $token = new AccessTokens();
         $token->setShop($shop);
-        $token->setExpiresAt(new \DatetimeImmutable('now + 30days'));
+        $token->setExpiresAt($expiresAt);
         $token->setCreatedAt(new \DatetimeImmutable('now'));
         $token->setAccessToken($response['access_token']);
         $token->setRefreshToken($response['refresh_token']);
 
+        $this->em->persist($shop);
         $this->em->persist($token);
         $this->em->flush();
 

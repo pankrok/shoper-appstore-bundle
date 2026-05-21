@@ -25,12 +25,12 @@ class AccessTokens
     #[ORM\Column(length: 64)]
     private ?string $refresh_token = null;
 
-    #[ORM\OneToOne(inversedBy: 'accessTokens', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'accessTokens', cascade: ['persist'])]
     private ?Shops $shop = null;
 
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->id;
+        return (string) $this->id;
     }
 
     public function getId(): ?int
