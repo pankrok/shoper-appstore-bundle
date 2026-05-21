@@ -2,11 +2,11 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Model;
 
-use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
-
 class ResourceModel extends RequestModel implements ResourceInterface
 {
-    public function setFilters(array $filters): ResourceModel
+    public const MAX_LIMIT = 50;
+
+    public function setFilters(array $filters): static
     {
         $this->filters = json_encode($filters);
 
@@ -15,31 +15,30 @@ class ResourceModel extends RequestModel implements ResourceInterface
 
     public function getFilters(): array
     {
-        return json_decode($this->filters, true);
+        if ($this->filters === null) {
+            return [];
+        }
+
+        return json_decode($this->filters, true) ?? [];
     }
 
-    public function setOrder(string $order): ResourceModel
+    public function setOrder(string $order): static
     {
-        $matches = [];
-        $expr = (array) $order;
+        $expr   = (array) $order;
         $result = [];
 
         foreach ($expr as $e) {
-            // basic syntax, with asc/desc suffix
             if (preg_match('/([a-z_0-9.]+) (asc|desc)$/i', $e)) {
                 $result[] = $e;
             } elseif (preg_match('/([\+\-]?)([a-z_0-9.]+)/i', $e, $matches)) {
                 $subResult = $matches[2];
-                if ('' == $matches[1] || '+' == $matches[1]) {
-                    $subResult .= ' asc';
-                } else {
-                    $subResult .= ' desc';
-                }
-                $result[] = $subResult;
+                $subResult .= ('' === $matches[1] || '+' === $matches[1]) ? ' asc' : ' desc';
+                $result[]   = $subResult;
             } else {
-                throw new \Exception('Cannot understand ordering expression');
+                throw new \InvalidArgumentException('Cannot understand ordering expression: "' . $e . '"');
             }
         }
+
         $this->order = $result;
 
         return $this;
@@ -47,13 +46,15 @@ class ResourceModel extends RequestModel implements ResourceInterface
 
     public function getOrder(): array
     {
-        return $this->order;
+        return $this->order ?? [];
     }
 
-    public function setLimit(int $limit): ResourceModel
+    public function setLimit(int $limit): static
     {
-        if ($limit < 1 || $limit > 50) {
-            throw new \Exception('Limit beyond 1-50 range');
+        if ($limit < 1 || $limit > self::MAX_LIMIT) {
+            throw new \InvalidArgumentException(
+                sprintf('Limit must be between 1 and %d, got %d.', self::MAX_LIMIT, $limit)
+            );
         }
         $this->limit = $limit;
 
@@ -65,10 +66,10 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->limit;
     }
 
-    public function setPage(int $page): ResourceModel
+    public function setPage(int $page): static
     {
         if ($page < 0) {
-            throw new \Exception('Page parameter must be positive');
+            throw new \InvalidArgumentException('Page parameter must be a non-negative integer.');
         }
         $this->page = $page;
 
@@ -86,16 +87,13 @@ class ResourceModel extends RequestModel implements ResourceInterface
             $this->setBody($body);
         }
 
-        if (is_int($body)) {
-            $this->url .= '/'.$body;
-        }
+        $url = is_int($body) ? $this->url . '/' . $body : $this->url;
 
         if ($this->bulk) {
             return $this->prepareBulk('GET');
         }
 
-        $request = $this->prepareRequest('GET');
-        return $this->client->request($request);
+        return $this->client->request($this->prepareRequest('GET', $url));
     }
 
     public function post(array $body = []): ResponseModel|array
@@ -107,14 +105,13 @@ class ResourceModel extends RequestModel implements ResourceInterface
         if ($this->bulk) {
             return $this->prepareBulk('POST');
         }
-        
-        if(isset($this->object) && $this->url === 'metafields') {
-            $this->url .= '/'.$this->object;
+
+        if (isset($this->object) && $this->url === 'metafields') {
+            $url = $this->url . '/' . $this->object;
+            return $this->client->request($this->prepareRequest('POST', $url));
         }
 
-        $request = $this->prepareRequest('POST');
-
-        return $this->client->request($request);
+        return $this->client->request($this->prepareRequest('POST'));
     }
 
     public function put(int $id, array $body): ResponseModel|array
@@ -122,15 +119,14 @@ class ResourceModel extends RequestModel implements ResourceInterface
         if (!empty($body)) {
             $this->setBody($body);
         }
-        $this->url .= '/'.$id;
+
+        $url = $this->url . '/' . $id;
 
         if ($this->bulk) {
             return $this->prepareBulk('PUT');
         }
 
-        $request = $this->prepareRequest('PUT');
-
-        return $this->client->request($request);
+        return $this->client->request($this->prepareRequest('PUT', $url));
     }
 
     public function delete(array|int $body): ResponseModel|array
@@ -139,16 +135,12 @@ class ResourceModel extends RequestModel implements ResourceInterface
             $this->setBody($body);
         }
 
-        if (is_int($body)) {
-            $this->url .= '/'.$body;
-        }
+        $url = is_int($body) ? $this->url . '/' . $body : $this->url;
 
         if ($this->bulk) {
             return $this->prepareBulk('DELETE');
         }
 
-        $request = $this->prepareRequest('DELETE');
-
-        return $this->client->request($request);
+        return $this->client->request($this->prepareRequest('DELETE', $url));
     }
 }

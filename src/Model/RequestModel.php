@@ -6,22 +6,23 @@ use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
 
 class RequestModel
 {
-    protected $client;
-    protected $bulk;
-    protected $body = [];
-    protected $filters = null;
-    protected $order = null;
-    protected $limit = 20;
-    protected $page = 0;
-    protected $method = null;
+    protected BearerInterface $client;
+    protected mixed $bulk = false;
+    protected array $body = [];
+    protected ?string $filters = null;
+    protected ?array $order = null;
+    protected int $limit = 20;
+    protected int $page = 0;
+    protected ?string $method = null;
+    protected string $url = '';
 
-    public function __construct(BearerInterface $client, $bulk = false)
+    public function __construct(BearerInterface $client, mixed $bulk = false)
     {
         $this->client = $client;
-        $this->bulk = $bulk;
+        $this->bulk   = $bulk;
     }
 
-    public function setBody(array $body): RequestModel
+    public function setBody(array $body): static
     {
         $this->body = $body;
 
@@ -33,39 +34,48 @@ class RequestModel
         return $this->body;
     }
 
-    public function getClinet(): BearerInterface
+    public function getClient(): BearerInterface
     {
         return $this->client;
     }
 
-    protected function prepareBulk($method): array
+    /**
+     * @deprecated since 1.2.0, use getClient() instead.
+     */
+    public function getClinet(): BearerInterface
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use getClient() instead.', E_USER_DEPRECATED);
+        return $this->getClient();
+    }
+
+    protected function prepareBulk(string $method): array
     {
         return [
             'method' => $method,
-            'path' => '/webapi/rest/'.$this->url,
-            'params' => ([
-                'page' => $this->page,
-                'limit' => $this->limit,
+            'path'   => '/webapi/rest/' . $this->url,
+            'params' => array_filter([
+                'page'    => $this->page,
+                'limit'   => $this->limit,
                 'filters' => $this->filters,
-                'order' => $this->order,
-            ]),
-            'body' => $this->body,
+                'order'   => $this->order,
+            ], fn($v) => $v !== null),
+            'body'   => $this->body,
         ];
     }
 
-    protected function prepareRequest($method): array
+    protected function prepareRequest(string $method, ?string $urlOverride = null): array
     {
         return [
-            'method' => $method,
-            'url' => $this->url,
+            'method'  => $method,
+            'url'     => $urlOverride ?? $this->url,
             'options' => [
-                'query' => [
-                    'page' => $this->page,
-                    'limit' => $this->limit,
+                'query' => array_filter([
+                    'page'    => $this->page,
+                    'limit'   => $this->limit,
                     'filters' => $this->filters,
-                    'order' => $this->order,
-                ],
-                'json' => $this->body,
+                    'order'   => $this->order,
+                ], fn($v) => $v !== null),
+                'json'  => $this->body,
             ],
         ];
     }

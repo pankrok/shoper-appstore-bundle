@@ -1,63 +1,86 @@
-AppstoreBundle allows you to log in using the data generated when creating the application
+# Authentication
+
+AppstoreBundle supports two authentication modes.
+
+## OAuth mode (Appstore)
+
+Configure `config/packages/appstore.yaml`:
+
 ```yaml
-# config/packages/appstore.yaml
 shoper_appstore:
-    appId: appId    
+    appId: appId
     appSecret: appSecret
     appstoreSecret: appstoreSecret
 ```
-or by creating an administrator in the store using his login and password (webapi access required)
+
+In OAuth mode the bundle handles token acquisition and refresh automatically. Inject `ApiController` and use resources directly:
+
+```php
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/index', name: 'index')]
+public function index(ApiController $api): Response
+{
+    try {
+        $data = $api->product->get()->getBodyArray();
+    } catch (ShoperApiException $e) {
+        throw $e;
+    }
+
+    return $this->render('index/index.html.twig', [
+        'data' => $data,
+    ]);
+}
+```
+
+## Basic Auth mode (admin username/password)
+
+Configure `config/packages/appstore.yaml`:
+
 ```yaml
-# config/packages/appstore.yaml
 shoper_appstore:
     username: adminUsername
     password: adminPassword
-    shopurl: https://shopurl.com
+    shopurl: https://yourshop.com
 ```
 
-in setBasicAuth method, define the token with the method setToken(string $ token) or log in using the auth() method which will return the token.
+Then call `useBasicAuth()` followed by `auth()` to obtain a token:
+
 ```php
-<?php
+#[Route('/index', name: 'index')]
+public function index(ApiController $api): Response
+{
+    $api->useBasicAuth()->auth();
 
-    #[Route('/index', name: 'index')]
-    public function index(ApiController $api): Response
-    {
-        $api->setBasicAuth()->auth();
-        /* 
-        * you can use toArray() method to recive array body of shop response:
-        * array(3) { ["access_token"]=> string(40) "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" ["expires_in"]=> int(2592000) ["token_type"]=> string(6) "bearer" } 
-        */
-        $data = $api->product->get()->getBodyArray();
-        $$token = $api->getClient()->getToken();
+    $data  = $api->product->get()->getBodyArray();
+    $token = $api->getHttpClient()->getToken();
 
-        return $this->renderForm('index/index.html.twig', [
-            'controller_name' => 'IndexController',
-            'r' => $data
-        ]);
-    }
+    return $this->render('index/index.html.twig', [
+        'data' => $data,
+    ]);
+}
 ```
 
-setBasicAuth() allows you to use the SDK without putting any data into the YAML file.
+`useBasicAuth()` also accepts runtime credentials, bypassing the YAML config entirely:
+
 ```php
-<?php
+$api->useBasicAuth('https://yourshop.com', [
+    'username' => 'admin',
+    'password' => 'secret',
+])->auth();
 
-    #[Route('/index', name: 'index')]
-    public function index(ApiController $api): Response
-    {
-        $options = [
-            'username' => 'foo',
-            'password' => 'bar',
-        ];
-        $url = 'https://foo.bar';
-        
-        $api->setBasicAuth($url, $options)->auth();
-        $data = $api->product->get()->getBodyArray();
-        $data[] = $api->getClient()->getToken();
-
-        return $this->renderForm('index/index.html.twig', [
-            'controller_name' => 'IndexController',
-            'response' => $data
-        ]);
-    }
+$data = $api->product->get()->getBodyArray();
 ```
 
+## Deprecated method names
+
+The following names were renamed in 1.2.0. Old names still work but emit `E_USER_DEPRECATED`.
+
+| Deprecated (≤ 1.1.x) | Replacement (≥ 1.2.0) |
+|---|---|
+| `setBasicAuth()` | `useBasicAuth()` |
+| `getClient()` | `getHttpClient()` |
+| `setClient()` | `setHttpClient()` |
