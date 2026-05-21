@@ -57,7 +57,7 @@ class Client
         return $this->adapter;
     }
 
-    public static function setDefaultAdapter(ClientInterface $adapter)
+    public static function setDefaultAdapter(BearerInterface $adapter): void
     {
         self::$defaultAdapter = $adapter;
     }

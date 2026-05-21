@@ -3,7 +3,7 @@
 namespace PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Component\HttpClient\Response\TraceableResponse;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
 
 interface BearerInterface
@@ -12,7 +12,7 @@ interface BearerInterface
     public function getHttpClient(): HttpClientInterface;
     public function setHttpClientOptions(array $options): void;
     public function request($request, $bulk = false): ResponseModel;
-    public function getResponse(): TraceableResponse;
+    public function getResponse(): ResponseInterface;
     public function setToken(string $token): void;
     public function getToken(): ?string;
 }

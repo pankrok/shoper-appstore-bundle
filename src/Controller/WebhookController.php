@@ -37,7 +37,7 @@ class WebhookController
         }
 
         $this->api = new ApiController($this->container, $this->shopRepository, $this->em);
-        $this->api->setParams(['shop' => $server['HTTP_X_SHOP_LICENSE']], false);
+        $this->api->initFromRequest(['shop' => $server['HTTP_X_SHOP_LICENSE']], false);
 
         return $request;
     }

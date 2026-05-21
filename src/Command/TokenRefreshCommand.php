@@ -2,68 +2,77 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Command;
 
+use Doctrine\Common\Collections\Criteria;
+use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
+use PanKrok\ShoperAppstoreBundle\Repository\AccessTokensRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use PanKrok\ShoperAppstoreBundle\Repository\AccessTokensRepository;
-use PanKrok\ShoperAppstoreBundle\Controller\ApiController;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 #[AsCommand(
-    name: 'ShoperAppstoreBundle:TokenRefresh',
-    description: 'This command automatickly refresh tokens',
+    name: 'shoper:token:refresh',
+    description: 'Refresh OAuth tokens that are close to expiry.',
+    aliases: ['ShoperAppstoreBundle:TokenRefresh'],
 )]
 class TokenRefreshCommand extends Command
 {
-
-    protected ApiController $api;
-    protected AccessTokensRepository $accessTokensRepository;
-    private $options;
-
-
-    public function __construct(ParameterBagInterface $container, ApiController $api, AccessTokensRepository $accessTokensRepository)
-    {
+    public function __construct(
+        private readonly ApiController $api,
+        private readonly AccessTokensRepository $accessTokensRepository,
+    ) {
         parent::__construct();
-        $this->api = $api;
-        $this->accessTokensRepository = $accessTokensRepository;
-        $this->options =$container->get('appstore');
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Maximum number of tokens to refresh per run.', 200)
+            ->addOption('hours-ahead', null, InputOption::VALUE_REQUIRED, 'Refresh tokens expiring within this many hours (max 23).', 23);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $output->write(json_encode($this->options));
+        $limit      = max(1, (int) $input->getOption('limit'));
+        $hoursAhead = min(23, max(1, (int) $input->getOption('hours-ahead')));
 
-        $date = new \DateTimeImmutable('now - 2days');
+        $threshold = new \DateTimeImmutable('@' . (time() + $hoursAhead * 3600));
 
-        $criteria = new \Doctrine\Common\Collections\Criteria();
-        $criteria->where($criteria->expr()->gt('expires_at', $date))
-            ->setMaxResults(100)
-        ;
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->lt('expiresAt', $threshold))
+            ->setMaxResults($limit);
 
         $tokens = $this->accessTokensRepository->matching($criteria);
 
-        if (count($tokens) > 0) {
-            $output->write('tokens found: ' . count($tokens) . PHP_EOL);
-            foreach ($tokens as $token) {
-                $shop = $token->getShop();
-                $output->write('shop found: ' . $shop->getShop() . PHP_EOL);
-                $params = ['shop' => $shop->getShop()];
-                $this->api->setParams($params, false);
-                sleep(1);
-            }
-        } else {
-            $output->write('no tokens found... ');
+        if (count($tokens) === 0) {
+            $io->success('No tokens need refreshing.');
+            return Command::SUCCESS;
         }
 
+        $io->note(sprintf('Found %d token(s) to refresh (threshold: %s).', count($tokens), $threshold->format('Y-m-d H:i:s')));
 
-        $io->success('Tokens updated');
+        $failed = 0;
+        foreach ($tokens as $token) {
+            $shop = $token->getShop();
+            try {
+                $this->api->refreshToken($shop);
+                $io->writeln(sprintf(' <info>✓</info> %s', $shop->getShop()));
+            } catch (\Throwable $e) {
+                $io->writeln(sprintf(' <error>✗</error> %s — %s', $shop->getShop(), $e->getMessage()));
+                ++$failed;
+            }
+        }
 
+        if ($failed > 0) {
+            $io->warning(sprintf('%d token(s) failed to refresh.', $failed));
+            return Command::FAILURE;
+        }
+
+        $io->success('All tokens refreshed successfully.');
         return Command::SUCCESS;
     }
 }
