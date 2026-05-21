@@ -2,6 +2,7 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 
+use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
 use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\Response\TraceableResponse;
@@ -49,8 +50,10 @@ class Bearer extends AbstractController implements BearerInterface
         );
 
         if (200 !== $this->response->getStatusCode()) {
-            $e = json_decode($this->response->getContent(false));
-            throw new \Exception($e->error."\r\n".$e->error_description, $this->response->getStatusCode());
+            throw ShoperApiException::fromResponse(
+                $this->response->getStatusCode(),
+                $this->response->getContent(false)
+            );
         }
 
         return new ResponseModel(
