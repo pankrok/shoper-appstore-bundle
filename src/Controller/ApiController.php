@@ -2,154 +2,147 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Controller;
 
-use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
-use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
-use PanKrok\ShoperAppstoreBundle\Entity\Shops;
-use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
+use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
+use PanKrok\ShoperAppstoreBundle\Entity\Shops;
+use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ApiController
 {
-    protected $client;
-    protected $apiOptions = [];
-    protected $params;
-    protected $shopUrl = null;
-    protected $shop = null;
-    protected $twig;
-    protected $em;
+    protected ?BearerInterface $client = null;
+    protected array $apiOptions = [];
+    protected array $requestParams = [];
+    protected ?string $shopUrl = null;
+    protected ?Shops $activeShop = null;
+    protected ShopsRepository $shopsRepository;
+    protected EntityManagerInterface $em;
 
-    public function __construct(ParameterBagInterface $container, ShopsRepository $shopsRepository, EntityManagerInterface $em)
-    {
+    public function __construct(
+        ParameterBagInterface $container,
+        ShopsRepository $shopsRepository,
+        EntityManagerInterface $em
+    ) {
         $this->apiOptions = $container->get('appstore');
         $this->shopsRepository = $shopsRepository;
+        $this->em = $em;
+
         if (isset($this->apiOptions['shopurl'])) {
             $this->shopUrl = $this->apiOptions['shopurl'];
         }
-        $this->em = $em;
     }
 
-    public function __get($property)
+    public function __get(string $property): mixed
     {
         $property = ucfirst($property);
-        if ($property === 'Bulk') {
-            $property .= 'Model';
-            $class = "\\PanKrok\\ShoperAppstoreBundle\\Model\\$property";
-        } else {
-            $class = "\\PanKrok\\ShoperAppstoreBundle\\Model\\Resource\\$property";
-        }
-        
+        $class = $property === 'Bulk'
+            ? "\\PanKrok\\ShoperAppstoreBundle\\Model\\BulkModel"
+            : "\\PanKrok\\ShoperAppstoreBundle\\Model\\Resource\\$property";
+
         if (class_exists($class)) {
-            return new $class($this->client);         
+            return new $class($this->client);
         }
+
+        return null;
     }
 
-    public function setParams(array $params, bool $checkHash = true): void
+    // -------------------------------------------------------------------------
+    // Current API
+    // -------------------------------------------------------------------------
+
+    /**
+     * Initialise shop context from Shoper iframe query parameters.
+     * Verifies the HMAC hash by default, then sets up the OAuth client.
+     * Automatically refreshes the token if it expires within 24 hours.
+     */
+    public function initFromRequest(array $params, bool $checkHash = true): void
     {
-        
-        if (isset($params['shop'])) {
-            $this->params = $params;
-            if (false === $this->checkHash($checkHash)) {
-                throw new \Exception('Invalid hash');
-            }
+        if (!isset($params['shop'])) {
+            return;
+        }
 
-            $this->shop = $this->shopsRepository->findOneBy(['shop' => $params['shop']]);
-            $this->shopUrl = $this->shop->getShopUrl();
-            $token = $this->shop->getAccessTokens();
-        
-        
-            $options = [
-                'options' => $this->apiOptions,
-                'entrypoint' => $this->shopUrl,
-            ];
+        $this->requestParams = $params;
 
-            $this->client = Client::factory(Client::ADAPTER_OAUTH, $options);
-            $this->client->setToken($token->getAccessToken());
-            $this->client->setRefreshToken($token->getRefreshToken());
-            $this->client->setExpired($token->getExpiresAt()->getTimestamp());
-            
-            if ($this->client->isExpiredFromTimestamp(time() + (60*60*24 * 1))) {
-                $refreshedToken = $this->client->refresh();
-                $refreshedToken = $refreshedToken->toArray();
+        if (false === $this->verifyHash($checkHash)) {
+            throw new \Exception('Invalid hash');
+        }
 
-                $token->setExpiresAt(new \DateTimeImmutable('now + 30days'));
-                $token->setCreatedAt(new \DateTimeImmutable('now'));
-                $token->setAccessToken($refreshedToken['access_token']);
-                $token->setRefreshToken($refreshedToken['refresh_token']);
-                $this->em->flush($token);
-                
-                $this->client->setToken($token->getAccessToken());
-                $this->client->setRefreshToken($token->getRefreshToken());
-                $this->client->setExpired($token->getExpiresAt()->getTimestamp());
-            }
-        } 
-    }
+        $this->activeShop = $this->shopsRepository->findOneBy(['shop' => $params['shop']]);
+        $this->shopUrl = $this->activeShop->getShopUrl();
+        $token = $this->activeShop->getAccessTokens();
 
-    public function refreshShopToken(Shops $shop): void
-    {
-        $this->shopUrl = $shop->getShopUrl();
-        $token = $shop->getAccessTokens();
-        $options = [
-            'options' => $this->apiOptions,
+        $this->client = Client::factory(Client::ADAPTER_OAUTH, [
+            'options'    => $this->apiOptions,
             'entrypoint' => $this->shopUrl,
-        ];
-
-        $this->client = Client::factory(Client::ADAPTER_OAUTH, $options);
+        ]);
         $this->client->setToken($token->getAccessToken());
         $this->client->setRefreshToken($token->getRefreshToken());
         $this->client->setExpired($token->getExpiresAt()->getTimestamp());
-        
-        if ($this->client->isExpiredFromTimestamp(time() + (60*60*24 * 1))) {
-            $refreshedToken = $this->client->refresh();
-            $refreshedToken = $refreshedToken->toArray();
 
-            $token->setExpiresAt(new \DateTimeImmutable('now + 30days'));
-            $token->setCreatedAt(new \DateTimeImmutable('now'));
-            $token->setAccessToken($refreshedToken['access_token']);
-            $token->setRefreshToken($refreshedToken['refresh_token']);
-            $this->em->flush($token);
-            
-            $this->client->setToken($token->getAccessToken());
-            $this->client->setRefreshToken($token->getRefreshToken());
-            $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
+            $this->performTokenRefresh($token);
         }
-
     }
-    
-    public function setBasicAuth(string $url = null, array $basicAuth = []): BearerInterface 
+
+    /**
+     * Refresh the OAuth token for a given shop.
+     * Used primarily by the CRON command.
+     */
+    public function refreshToken(Shops $shop): void
+    {
+        $this->shopUrl = $shop->getShopUrl();
+        $token = $shop->getAccessTokens();
+
+        $this->client = Client::factory(Client::ADAPTER_OAUTH, [
+            'options'    => $this->apiOptions,
+            'entrypoint' => $this->shopUrl,
+        ]);
+        $this->client->setToken($token->getAccessToken());
+        $this->client->setRefreshToken($token->getRefreshToken());
+        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+
+        if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
+            $this->performTokenRefresh($token);
+        }
+    }
+
+    /**
+     * Switch to Basic Auth (admin username/password) mode.
+     * Pass $url and $basicAuth to override YAML config values.
+     */
+    public function useBasicAuth(?string $url = null, array $basicAuth = []): BearerInterface
     {
         if (!empty($basicAuth)) {
             $this->apiOptions = $basicAuth;
         }
-        
-        if (isset($url)) {
+
+        if ($url !== null) {
             $this->shopUrl = $url;
         }
-        
-        $options = [
-            'options' =>$this->apiOptions,
-            'entrypoint' => $this->shopUrl,
-        ];
 
-        $this->client = Client::factory(Client::ADAPTER_BASIC_AUTH, $options);
+        $this->client = Client::factory(Client::ADAPTER_BASIC_AUTH, [
+            'options'    => $this->apiOptions,
+            'entrypoint' => $this->shopUrl,
+        ]);
+
         return $this->client;
     }
 
-    public function getParams()
+    public function getRequestParams(): array
     {
-        return $this->params;
+        return $this->requestParams;
     }
 
-     public function setClient(BearerInterface $client): void
+    public function setHttpClient(BearerInterface $client): void
     {
         $this->client = $client;
     }
 
-    public function getClient(): BearerInterface
+    public function getHttpClient(): BearerInterface
     {
         return $this->client;
     }
-    
 
     public function setShopUrl(string $url): void
     {
@@ -161,46 +154,152 @@ class ApiController
         return $this->shopUrl;
     }
 
-    public function setShop(Shops $shop)
+    public function bindShop(Shops $shop): void
     {
-        $this->setShopUrl($shop->getShopUrl());
-        $this->shop = $shop;
+        $this->shopUrl = $shop->getShopUrl();
+        $this->activeShop = $shop;
     }
 
-    public function getShop(): ?Shops
+    public function getActiveShop(): ?Shops
     {
-        return $this->shop;
+        return $this->activeShop;
     }
 
-    public function getAppId(): bool
+    /**
+     * Returns true when the bundle is configured for OAuth (Appstore) mode.
+     */
+    public function isOAuthMode(): bool
     {
         return isset($this->apiOptions['appId']);
     }
 
-    protected function checkHash(bool $checkHash): bool
+    // -------------------------------------------------------------------------
+    // Deprecated aliases — kept for backward compatibility
+    // -------------------------------------------------------------------------
+
+    /**
+     * @deprecated since 1.2.0, use initFromRequest() instead.
+     */
+    public function setParams(array $params, bool $checkHash = true): void
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use initFromRequest() instead.', E_USER_DEPRECATED);
+        $this->initFromRequest($params, $checkHash);
+    }
+
+    /**
+     * @deprecated since 1.2.0, use refreshToken() instead.
+     */
+    public function refreshShopToken(Shops $shop): void
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use refreshToken() instead.', E_USER_DEPRECATED);
+        $this->refreshToken($shop);
+    }
+
+    /**
+     * @deprecated since 1.2.0, use useBasicAuth() instead.
+     */
+    public function setBasicAuth(?string $url = null, array $basicAuth = []): BearerInterface
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use useBasicAuth() instead.', E_USER_DEPRECATED);
+        return $this->useBasicAuth($url, $basicAuth);
+    }
+
+    /**
+     * @deprecated since 1.2.0, use getRequestParams() instead.
+     */
+    public function getParams(): array
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use getRequestParams() instead.', E_USER_DEPRECATED);
+        return $this->getRequestParams();
+    }
+
+    /**
+     * @deprecated since 1.2.0, use setHttpClient() instead.
+     */
+    public function setClient(BearerInterface $client): void
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use setHttpClient() instead.', E_USER_DEPRECATED);
+        $this->setHttpClient($client);
+    }
+
+    /**
+     * @deprecated since 1.2.0, use getHttpClient() instead.
+     */
+    public function getClient(): BearerInterface
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use getHttpClient() instead.', E_USER_DEPRECATED);
+        return $this->getHttpClient();
+    }
+
+    /**
+     * @deprecated since 1.2.0, use bindShop() instead.
+     */
+    public function setShop(Shops $shop): void
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use bindShop() instead.', E_USER_DEPRECATED);
+        $this->bindShop($shop);
+    }
+
+    /**
+     * @deprecated since 1.2.0, use getActiveShop() instead.
+     */
+    public function getShop(): ?Shops
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use getActiveShop() instead.', E_USER_DEPRECATED);
+        return $this->getActiveShop();
+    }
+
+    /**
+     * @deprecated since 1.2.0, use isOAuthMode() instead.
+     */
+    public function getAppId(): bool
+    {
+        trigger_error(__METHOD__ . '() is deprecated, use isOAuthMode() instead.', E_USER_DEPRECATED);
+        return $this->isOAuthMode();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private function verifyHash(bool $checkHash): bool
     {
         if (false === $checkHash) {
             return true;
         }
 
         $params = [
-            'place' => $this->params['place'],
-            'shop' => $this->params['shop'],
-            'timestamp' => $this->params['timestamp'],
+            'place'     => $this->requestParams['place'],
+            'shop'      => $this->requestParams['shop'],
+            'timestamp' => $this->requestParams['timestamp'],
         ];
 
-        $send_hash = $this->params['hash'];
+        $sentHash = $this->requestParams['hash'];
         ksort($params);
-        $param_array = [];
+
+        $paramPairs = [];
         foreach ($params as $k => $v) {
-            $param_array[] = $k.'='.$v;
-        }
-        $param_string = join('&', $param_array);
-        $hash = hash_hmac('sha512', $param_string, $this->apiOptions['appstoreSecret']);
-        if ($hash === $send_hash) {
-            return true;
+            $paramPairs[] = $k . '=' . $v;
         }
 
-        return false;
+        $hash = hash_hmac('sha512', implode('&', $paramPairs), $this->apiOptions['appstoreSecret']);
+
+        return hash_equals($hash, $sentHash);
+    }
+
+    private function performTokenRefresh(object $token): void
+    {
+        $refreshed = $this->client->refresh()->toArray();
+
+        $expiresIn = isset($refreshed['expires_in']) ? (int) $refreshed['expires_in'] : 7776000;
+        $token->setExpiresAt(new \DateTimeImmutable('@' . (time() + $expiresIn)));
+        $token->setCreatedAt(new \DateTimeImmutable('now'));
+        $token->setAccessToken($refreshed['access_token']);
+        $token->setRefreshToken($refreshed['refresh_token']);
+        $this->em->flush($token);
+
+        $this->client->setToken($token->getAccessToken());
+        $this->client->setRefreshToken($token->getRefreshToken());
+        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
     }
 }

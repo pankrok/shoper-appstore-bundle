@@ -20,8 +20,8 @@ class RequestSubscriber implements EventSubscriberInterface
         if ($event->getRequest()->attributes->has('_route')) {
             $query = $event->getRequest()->query->all();
             $routeName = $event->getRequest()->attributes->get('_route');
-            if (strpos($routeName, 'billing_') === false && $this->api->getAppId() === true) {
-                $this->api->setParams($query);
+            if (strpos($routeName, 'billing_') === false && $this->api->isOAuthMode() === true) {
+                $this->api->initFromRequest($query);
             }
         }
     }

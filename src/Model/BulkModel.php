@@ -58,10 +58,10 @@ final class BulkModel extends RequestModel
         return $this;
     }
 
-    public function send()
+    public function send(): ResponseModel
     {
-        $request = $this->prepareRequest('POST');
-        $this->body = null;
+        $request    = $this->prepareRequest('POST');
+        $this->body = [];
 
         return $this->client->request($request, true);
     }

@@ -2,11 +2,11 @@
 
 namespace <?php echo $namespace; ?>;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use PanKrok\ShoperAppstoreBundle\Controller\AppstoreBillingController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 class <?php echo $class_name; ?> extends AbstractController
 {

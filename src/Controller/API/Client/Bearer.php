@@ -2,26 +2,27 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 
-use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpClient\Response\TraceableResponse;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use PanKrok\ShoperAppstoreBundle\Controller\HttpClient;
+use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
+use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class Bearer extends AbstractController implements BearerInterface
+class Bearer implements BearerInterface
 {
-    protected $client;
-    protected $entrypoint;
-    protected $token;
-    protected $refreshToken;
-    protected $expired;
-    protected $response = null;
+    protected HttpClientInterface $client;
+    protected string $entrypoint;
+    protected array $options = [];
+    protected ?string $token = null;
+    protected ?string $refreshToken = null;
+    protected ?int $expired = null;
+    protected ?ResponseInterface $response = null;
 
     public function __construct(array $options = [])
     {
-        $this->options = $options['options'];
+        $this->options    = $options['options'];
         $this->entrypoint = $options['entrypoint'];
-        $this->client = new HttpClient();
+        $this->client     = new HttpClient(\Symfony\Component\HttpClient\HttpClient::create());
     }
 
     public function setHttpClient(HttpClientInterface $client): void
@@ -36,7 +37,7 @@ class Bearer extends AbstractController implements BearerInterface
 
     public function setHttpClientOptions(array $options): void
     {
-        $this->client->withOptions($options);
+        $this->client = $this->client->withOptions($options);
     }
 
     public function request($request, $bulk = false): ResponseModel
@@ -44,13 +45,15 @@ class Bearer extends AbstractController implements BearerInterface
         $request['options']['auth_bearer'] = $this->getToken();
         $this->response = $this->client->request(
             $request['method'],
-            $this->entrypoint.'/webapi/rest/'.$request['url'],
+            $this->entrypoint . '/webapi/rest/' . $request['url'],
             $request['options']
         );
 
         if (200 !== $this->response->getStatusCode()) {
-            $e = json_decode($this->response->getContent(false));
-            throw new \Exception($e->error."\r\n".$e->error_description, $this->response->getStatusCode());
+            throw ShoperApiException::fromResponse(
+                $this->response->getStatusCode(),
+                $this->response->getContent(false)
+            );
         }
 
         return new ResponseModel(
@@ -60,7 +63,7 @@ class Bearer extends AbstractController implements BearerInterface
         );
     }
 
-    public function getResponse(): TraceableResponse
+    public function getResponse(): ResponseInterface
     {
         return $this->response;
     }
@@ -74,7 +77,7 @@ class Bearer extends AbstractController implements BearerInterface
     {
         return $this->token;
     }
-    
+
     public function setRefreshToken(string $refreshToken): void
     {
         $this->refreshToken = $refreshToken;
@@ -84,25 +87,17 @@ class Bearer extends AbstractController implements BearerInterface
     {
         return $this->refreshToken;
     }
-    
-    
+
     public function isExpired(): bool
     {
-        if ($this->expired < time()) {
-            return true;
-        }
-        
-        return false;
+        return $this->expired < time();
     }
-    
-    public function isExpiredFromTimestamp(int $timestamp) {
-        if ($this->expired < $timestamp) {
-            return true;
-        }
-        
-        return false;
+
+    public function isExpiredFromTimestamp(int $timestamp): bool
+    {
+        return $this->expired < $timestamp;
     }
-    
+
     public function setExpired(int $time): void
     {
         $this->expired = $time;

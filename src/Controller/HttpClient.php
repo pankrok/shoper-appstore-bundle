@@ -13,14 +13,16 @@ class HttpClient implements HttpClientInterface
 {
     use AsyncDecoratorTrait;
 
-    protected $limit = 10;
-
     public function request(string $method, string $url, array $options = []): ResponseInterface
     {
         $passthru = function (ChunkInterface $chunk, AsyncContext $context) {
             yield $chunk;
+
             $headers = $context->getHeaders();
-            if ($headers['x-shop-api-calls'] === $headers['x-shop-api-limit']) {
+            $calls   = isset($headers['x-shop-api-calls'][0]) ? (int) $headers['x-shop-api-calls'][0] : null;
+            $limit   = isset($headers['x-shop-api-limit'][0]) ? (int) $headers['x-shop-api-limit'][0] : null;
+
+            if ($calls !== null && $limit !== null && $calls >= $limit) {
                 sleep(1);
             }
         };

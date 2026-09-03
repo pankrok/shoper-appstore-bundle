@@ -26,10 +26,8 @@ class UninstallSubscriber implements EventSubscriberInterface
         if (($shop = $this->shopsRepository->findOneBy(['shop' => $payload['shop']])) !== null) {
             if (($token = $shop->getAccessTokens()) !== null) {
                 $this->em->remove($token);
-                $this->em->flush();
             }
 
-            $shop->setAccessTokens(null);
             $shop->setInstalled(false);
             $this->em->persist($shop);
             $this->em->flush();

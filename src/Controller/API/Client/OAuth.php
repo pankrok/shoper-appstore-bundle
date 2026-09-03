@@ -2,6 +2,8 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 
+use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
+
 class OAuth extends Bearer
 {
     protected const OAUTH_URL = '/webapi/rest/oauth/token?grant_type=authorization_code';
@@ -23,7 +25,10 @@ class OAuth extends Bearer
             ]
         );
         if (200 !== $response->getStatusCode()) {
-            throw new \Exception('Oauth exception: '.$response->getStatusCode()." \n".$response->getHeaders(false)." \n".$response->getContent(false)." \n");
+            throw ShoperApiException::fromResponse(
+                $response->getStatusCode(),
+                $response->getContent(false)
+            );
         }
 
         $token = $response->toArray();
@@ -47,11 +52,13 @@ class OAuth extends Bearer
                 ],
             ]
         );
-        // FIXME !
-        // if (200 !== $response->getStatusCode()) {
-            // throw new \Exception('Oauth refresh token exception: '.$response->getStatusCode()." \n".$response->getHeaders(false)." \n".$response->getContent(false)." \n");
-        // }
-        
+        if (200 !== $response->getStatusCode()) {
+            throw ShoperApiException::fromResponse(
+                $response->getStatusCode(),
+                $response->getContent(false)
+            );
+        }
+
         $token = $response->toArray();
         $this->setToken($token['access_token']);
 
