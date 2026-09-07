@@ -1,0 +1,14 @@
+# Loaded by ShoperAppstoreExtension only when symfony/maker-bundle is installed.
+# Registering these unconditionally emits a deprecation on Symfony 7.4 in apps
+# without MakerBundle, because the classes cannot be autoloaded there.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperController:
+        tags: [maker.command]
+    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperBillingController:
+        tags: [maker.command]
+    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperWebhookController:
+        tags: [maker.command]

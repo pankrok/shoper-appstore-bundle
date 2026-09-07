@@ -23,7 +23,7 @@ class JsSdkSubscriber implements EventSubscriberInterface
         $this->twig->addGlobal('shoper_js_sdk', $this->sdk);
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             ControllerEvent::class => 'onControllerEvent',

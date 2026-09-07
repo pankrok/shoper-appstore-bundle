@@ -1,8 +1,8 @@
 # Shoper Appstore Symfony Bundle
 
-Unofficial Symfony 6.4 bundle for building applications on the [Shoper Appstore](https://developers.shoper.pl/developers/appstore). Provides OAuth integration, REST API client, billing and webhook handling, Twig helpers, and Maker commands for scaffolding controllers. Not official Shoper software.
+Unofficial Symfony 7.4 bundle for building applications on the [Shoper Appstore](https://developers.shoper.pl/developers/appstore). Provides OAuth integration, REST API client, billing and webhook handling, Twig helpers, and Maker commands for scaffolding controllers. Not official Shoper software.
 
-Current version: **1.2.0**
+Current version: **2.0.0**
 
 ## Table of contents
 
@@ -16,7 +16,7 @@ Current version: **1.2.0**
 ## Technologies
 
 - PHP 8.2
-- Symfony 6.4 LTS
+- Symfony 7.4 LTS
 - Doctrine ORM
 - Twig
 - Symfony HttpClient
@@ -27,7 +27,7 @@ Current version: **1.2.0**
 Install via Composer:
 
 ```bash
-composer require pankrok/shoper-appstore-bundle "^1.2.0"
+composer require pankrok/shoper-appstore-bundle "^2.0.0"
 ```
 
 Create the database tables:
