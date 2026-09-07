@@ -2,20 +2,15 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-    
+
     PanKrok\ShoperAppstoreBundle\:
         resource: '../src/'
         exclude:
-          
-            - '../src/Controllers/Api/'
-            - '../src/Model/'
+            - '../src/Controller/API/'
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Events/'
+            - '../src/Exception/'
             - '../src/Maker/'
-            - '../src/Tests/'
+            - '../src/Model/'
             - '../src/ShoperAppstoreBundle.php'
-            
-    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperController:
-        tags: [maker.command]
-    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperBillingController:
-        tags: [maker.command] 
-    PanKrok\ShoperAppstoreBundle\Maker\MakeShoperWebhookController:
-        tags: [maker.command]

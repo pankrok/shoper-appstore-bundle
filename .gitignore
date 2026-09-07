@@ -1,0 +1,8 @@
+/vendor/
+/composer.lock
+/symfony.lock
+/var/
+/.phpunit.cache/
+/phpunit.xml
+/.env.local
+/.env.*.local
