@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Gauge extends ResourceModel
 {
-    protected $url = 'gauges';
+    protected string $url = 'gauges';
 }

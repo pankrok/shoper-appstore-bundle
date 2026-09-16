@@ -12,7 +12,7 @@ class RequestModel
     protected ?string $filters = null;
     protected ?array $order = null;
     protected int $limit = 20;
-    protected int $page = 0;
+    protected int $page = 1;
     protected ?string $method = null;
     protected string $url = '';
 
@@ -48,19 +48,27 @@ class RequestModel
         return $this->getClient();
     }
 
-    protected function prepareBulk(string $method): array
+    protected function prepareBulk(string $method, ?string $urlOverride = null): array
     {
-        return [
+        $call = [
             'method' => $method,
-            'path'   => '/webapi/rest/' . $this->url,
-            'params' => array_filter([
+            'path'   => '/webapi/rest/' . ($urlOverride ?? $this->url),
+        ];
+
+        if ('GET' === $method) {
+            $call['params'] = array_filter([
                 'page'    => $this->page,
                 'limit'   => $this->limit,
                 'filters' => $this->filters,
                 'order'   => $this->order,
-            ], fn($v) => $v !== null),
-            'body'   => $this->body,
-        ];
+            ], fn($v) => $v !== null);
+        }
+
+        if ([] !== $this->body) {
+            $call['body'] = $this->body;
+        }
+
+        return $call;
     }
 
     protected function prepareRequest(string $method, ?string $urlOverride = null): array

@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class AdditionalField extends ResourceModel
 {
-    protected $url = 'additional-fields';
+    protected string $url = 'additional-fields';
 }

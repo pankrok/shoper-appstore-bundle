@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class LoyaltyEvent extends ResourceModel
 {
-    protected $url = 'loyalty-events';
+    protected string $url = 'loyalty-events';
 }

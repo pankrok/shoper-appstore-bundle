@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Webhook extends ResourceModel
 {
-    protected $url = 'webhooks';
+    protected string $url = 'webhooks';
 }

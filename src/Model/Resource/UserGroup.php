@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class UserGroup extends ResourceModel
 {
-    protected $url = 'user-groups';
+    protected string $url = 'user-groups';
 }

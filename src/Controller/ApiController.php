@@ -40,11 +40,15 @@ class ApiController
             ? "\\PanKrok\\ShoperAppstoreBundle\\Model\\BulkModel"
             : "\\PanKrok\\ShoperAppstoreBundle\\Model\\Resource\\$property";
 
-        if (class_exists($class)) {
-            return new $class($this->client);
+        if (!class_exists($class)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Unknown Shoper API resource "%s" (expected class %s).',
+                $property,
+                $class
+            ));
         }
 
-        return null;
+        return new $class($this->client);
     }
 
     // -------------------------------------------------------------------------
@@ -132,6 +136,14 @@ class ApiController
     public function getRequestParams(): array
     {
         return $this->requestParams;
+    }
+
+    /**
+     * Resolved "appstore" bundle configuration (appId, appSecret, appstoreSecret, ...).
+     */
+    public function getOptions(): array
+    {
+        return $this->apiOptions;
     }
 
     public function setHttpClient(BearerInterface $client): void

@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class OrderTag extends ResourceModel
 {
-    protected $url = 'order-tags';
+    protected string $url = 'order-tags';
 }

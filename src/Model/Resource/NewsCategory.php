@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class NewsCategory extends ResourceModel
 {
-    protected $url = 'news-categories';
+    protected string $url = 'news-categories';
 }

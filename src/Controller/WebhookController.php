@@ -2,46 +2,60 @@
 
 namespace PanKrok\ShoperAppstoreBundle\Controller;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
+use PanKrok\ShoperAppstoreBundle\Exception\InvalidWebhookChecksumException;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\EntityManagerInterface;
 
 class WebhookController
 {
-    protected $options;
-    protected $container;
-    protected $shopRepository;
-    protected $api;
-    protected $em;
+    protected array $options;
+    protected ?ApiController $api = null;
 
-    public function __construct(ParameterBagInterface $container, ShopsRepository $shopRepository, EntityManagerInterface $em)
-    {
-        $this->container = $container;
-        $this->options = $container->get('appstore');
-        $this->shopRepository = $shopRepository;
-        $this->em = $em;
+    public function __construct(
+        protected ApiController $apiController,
+    ) {
+        $this->options = $apiController->getOptions();
     }
 
-    public function checksum(Request &$request, string $secret, bool $appstore = true): Request
+    /**
+     * Verifies the X-WEBHOOK-SHA1 signature of an incoming Shoper webhook and
+     * initialises the API client for the shop that sent it.
+     *
+     * Shoper signs the payload as sha1("<webhook id>:<secret>:<raw body>").
+     * For Appstore apps the secret is derived per shop:
+     * hmac_sha512("<shop license>:<webhook secret>", appstoreSecret).
+     *
+     * @throws InvalidWebhookChecksumException
+     */
+    public function checksum(Request $request, string $secret, bool $appstore = true): Request
     {
-        $server = $request->server->all();
-        $data = $request->getContent();
+        $data      = $request->getContent();
+        $webhookId = $request->headers->get('X-WEBHOOK-ID');
+        $signature = $request->headers->get('X-WEBHOOK-SHA1');
+        $license   = $request->headers->get('X-SHOP-LICENSE');
 
-        if (true === $appstore && isset($server['HTTP_X_SHOP_LICENSE'])) {
-            $secret_key = hash_hmac('sha512', $server['HTTP_X_SHOP_LICENSE'].':'.$secret, $this->options['appstoreSecret']);
+        if ('' === $data || null === $webhookId || null === $signature) {
+            throw new InvalidWebhookChecksumException('Missing webhook payload or signature headers.');
         }
 
-        if (empty($data) || !isset($server['HTTP_X_WEBHOOK_ID']) || !isset($server['HTTP_X_WEBHOOK_SHA1']) || sha1($server['HTTP_X_WEBHOOK_ID'].':'.$secret_key.':'.$data) !== $server['HTTP_X_WEBHOOK_SHA1']) {
-            throw new \Exception('invalid checksum');
+        if ($appstore) {
+            if (null === $license) {
+                throw new InvalidWebhookChecksumException('Missing X-SHOP-LICENSE header on Appstore webhook.');
+            }
+            $secret = hash_hmac('sha512', $license . ':' . $secret, $this->options['appstoreSecret']);
         }
 
-        $this->api = new ApiController($this->container, $this->shopRepository, $this->em);
-        $this->api->initFromRequest(['shop' => $server['HTTP_X_SHOP_LICENSE']], false);
+        if (!hash_equals(sha1($webhookId . ':' . $secret . ':' . $data), $signature)) {
+            throw new InvalidWebhookChecksumException('Webhook signature mismatch.');
+        }
+
+        if (null !== $license) {
+            $this->api = $this->apiController;
+            $this->api->initFromRequest(['shop' => $license], false);
+        }
 
         return $request;
     }
-    
+
     public function getApiClient(): ?ApiController
     {
         return $this->api;

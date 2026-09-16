@@ -68,8 +68,8 @@ class ResourceModel extends RequestModel implements ResourceInterface
 
     public function setPage(int $page): static
     {
-        if ($page < 0) {
-            throw new \InvalidArgumentException('Page parameter must be a non-negative integer.');
+        if ($page < 1) {
+            throw new \InvalidArgumentException('Page parameter must be a positive integer (API pages start at 1).');
         }
         $this->page = $page;
 
@@ -90,7 +90,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         $url = is_int($body) ? $this->url . '/' . $body : $this->url;
 
         if ($this->bulk) {
-            return $this->prepareBulk('GET');
+            return $this->prepareBulk('GET', $url);
         }
 
         return $this->client->request($this->prepareRequest('GET', $url));
@@ -102,16 +102,15 @@ class ResourceModel extends RequestModel implements ResourceInterface
             $this->setBody($body);
         }
 
+        $url = (isset($this->object) && $this->url === 'metafields')
+            ? $this->url . '/' . $this->object
+            : $this->url;
+
         if ($this->bulk) {
-            return $this->prepareBulk('POST');
+            return $this->prepareBulk('POST', $url);
         }
 
-        if (isset($this->object) && $this->url === 'metafields') {
-            $url = $this->url . '/' . $this->object;
-            return $this->client->request($this->prepareRequest('POST', $url));
-        }
-
-        return $this->client->request($this->prepareRequest('POST'));
+        return $this->client->request($this->prepareRequest('POST', $url));
     }
 
     public function put(int $id, array $body): ResponseModel|array
@@ -123,7 +122,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         $url = $this->url . '/' . $id;
 
         if ($this->bulk) {
-            return $this->prepareBulk('PUT');
+            return $this->prepareBulk('PUT', $url);
         }
 
         return $this->client->request($this->prepareRequest('PUT', $url));
@@ -138,7 +137,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
         $url = is_int($body) ? $this->url . '/' . $body : $this->url;
 
         if ($this->bulk) {
-            return $this->prepareBulk('DELETE');
+            return $this->prepareBulk('DELETE', $url);
         }
 
         return $this->client->request($this->prepareRequest('DELETE', $url));

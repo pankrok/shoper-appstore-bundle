@@ -2,7 +2,7 @@
 
 Unofficial Symfony 7.4 bundle for building applications on the [Shoper Appstore](https://developers.shoper.pl/developers/appstore). Provides OAuth integration, REST API client, billing and webhook handling, Twig helpers, and Maker commands for scaffolding controllers. Not official Shoper software.
 
-Current version: **2.0.0**
+Current version: **2.0.2**
 
 ## Table of contents
 

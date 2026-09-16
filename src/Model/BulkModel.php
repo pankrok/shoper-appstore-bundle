@@ -4,7 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\Model;
 
 final class BulkModel extends RequestModel
 {
-    protected $url = 'bulk';
+    protected string $url = 'bulk';
     private $bulkLimit = 25;
 
     public function __get($property)

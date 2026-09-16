@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class ObjectMtime extends ResourceModel
 {
-    protected $url = 'object-mtime';
+    protected string $url = 'object-mtime';
 }

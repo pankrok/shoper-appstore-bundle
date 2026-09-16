@@ -7,8 +7,8 @@ use PanKrok\ShoperAppstoreBundle\Model\ResponseModel;
 
 final class Metafield extends ResourceModel
 {
-    protected $url = 'metafields';
-    protected $object = 'system';
+    protected string $url = 'metafields';
+    protected string $object = 'system';
 
     public const TYPE_INT = 1;
     /**
@@ -36,19 +36,22 @@ final class Metafield extends ResourceModel
         return $this->object;
     }
 
-    public function get(array|int|null $body = null): ResponseModel
+    public function get(array|int|null $body = null): ResponseModel|array
     {
-        if (strlen($this->object) < 1) {
-            throw new \Exception('invalit object: ' . $this->object);
+        if ('' === $this->object) {
+            throw new \InvalidArgumentException('Metafield object name must not be empty.');
         }
 
-        $this->url = 'metafields/'.$this->object;
-       
-        $request = $this->prepareRequest('GET');
-        if (is_int($body)) {
-            $request['url'] .= '/'.$body;
+        if (!empty($body) && !is_int($body)) {
+            $this->setBody($body);
         }
-        
-        return $this->client->request($request);
+
+        $url = $this->url . '/' . $this->object . (is_int($body) ? '/' . $body : '');
+
+        if ($this->bulk) {
+            return $this->prepareBulk('GET', $url);
+        }
+
+        return $this->client->request($this->prepareRequest('GET', $url));
     }
 }

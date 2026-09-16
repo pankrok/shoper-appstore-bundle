@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Redirect extends ResourceModel
 {
-    protected $url = 'redirects';
+    protected string $url = 'redirects';
 }

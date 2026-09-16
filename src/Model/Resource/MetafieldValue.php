@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class MetafieldValue extends ResourceModel
 {
-    protected $url = 'metafield-values';
+    protected string $url = 'metafield-values';
 }

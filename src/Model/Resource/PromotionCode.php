@@ -12,5 +12,5 @@ final class PromotionCode extends ResourceModel
     public const PROGRESSIVE_PERCENTAGE_DISCOUNT = 4;
     public const PROGRESSIVE_QUOTE_DISCOUNT = 5;
 	
-	protected $url = 'promotion-codes';
+    protected string $url = 'promotion-codes';
 }

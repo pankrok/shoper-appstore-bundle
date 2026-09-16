@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class OptionValue extends ResourceModel
 {
-    protected $url = 'option-values';
+    protected string $url = 'option-values';
 }
