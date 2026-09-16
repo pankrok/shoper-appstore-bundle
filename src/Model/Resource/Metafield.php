@@ -46,7 +46,7 @@ final class Metafield extends ResourceModel
             $this->setBody($body);
         }
 
-        $url = $this->url . '/' . $this->object . (is_int($body) ? '/' . $body : '');
+        $url = $this->baseUrl() . '/' . $this->object . (is_int($body) ? '/' . $body : '');
 
         if ($this->bulk) {
             return $this->prepareBulk('GET', $url);

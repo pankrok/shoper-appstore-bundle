@@ -37,6 +37,8 @@ final class ResourceBulkPathTest extends TestCase
             public function getResponse(): ResponseInterface { throw new \LogicException(); }
             public function setToken(string $token): void {}
             public function getToken(): ?string { return 'token'; }
+            public function setOnTokenRefreshed(?callable $callback): void {}
+            public function getRateLimitState(): array { return ['calls' => null, 'limit' => null, 'bandwidth' => null]; }
         };
     }
 

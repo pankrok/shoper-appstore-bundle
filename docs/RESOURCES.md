@@ -39,6 +39,7 @@ $api->product->delete(42);
 | `categoriesTree` | [categories-tree](https://developers.shoper.pl/developers/api/resources/categories-tree) |
 | `category` | [categories](https://developers.shoper.pl/developers/api/resources/categorys) |
 | `collection` | [collections](https://developers.shoper.pl/developers/api/resources/collections) |
+| `collectionProduct` | [collections/{id}/products](https://developers.shoper.pl/developers/api/resources/collections-products) — sub-resource |
 | `currency` | [currencies](https://developers.shoper.pl/developers/api/resources/currencys) |
 | `dashboardActivity` | [dashboard-activity](https://developers.shoper.pl/developers/api/resources/dashboard-activitys) |
 | `dashboardStat` | [dashboard-stats](https://developers.shoper.pl/developers/api/resources/dashboard-stats) |
@@ -62,13 +63,20 @@ $api->product->delete(42);
 | `optionValue` | [option-values](https://developers.shoper.pl/developers/api/resources/option-values) |
 | `order` | [orders](https://developers.shoper.pl/developers/api/resources/orders) |
 | `orderProduct` | [order-products](https://developers.shoper.pl/developers/api/resources/order-products) |
+| `orderRefund` | [order-refunds](https://developers.shoper.pl/developers/api/resources/order-refunds) |
+| `orderTransaction` | [order-transactions](https://developers.shoper.pl/developers/api/resources/order-transactions) |
 | `orderTag` | [order-tags](https://developers.shoper.pl/developers/api/resources/order-tags) |
 | `parcel` | [parcels](https://developers.shoper.pl/developers/api/resources/parcels) |
 | `payment` | [payments](https://developers.shoper.pl/developers/api/resources/payments) |
+| `paymentChannel` | [payments/{id}/channels](https://developers.shoper.pl/developers/api/resources/payments-channels) — sub-resource, selected apps only |
 | `producer` | [producers](https://developers.shoper.pl/developers/api/resources/producers) |
 | `product` | [products](https://developers.shoper.pl/developers/api/resources/products) |
 | `productFile` | [product-files](https://developers.shoper.pl/developers/api/resources/product-files) |
 | `productImage` | [product-images](https://developers.shoper.pl/developers/api/resources/product-images) |
+| `productSafetyCertificate` | [product-safety-certificates](https://developers.shoper.pl/developers/api/resources/product-safety-certificates) (GPSR) |
+| `productSafetyImporter` | [product-safety-importers](https://developers.shoper.pl/developers/api/resources/product-safety-importers) (GPSR) |
+| `productSafetyProducer` | [product-safety-producers](https://developers.shoper.pl/developers/api/resources/product-safety-producers) (GPSR) |
+| `productSafetyResponsible` | [product-safety-responsibles](https://developers.shoper.pl/developers/api/resources/product-safety-responsibles) (GPSR) |
 | `productStock` | [product-stocks](https://developers.shoper.pl/developers/api/resources/product-stocks) |
 | `productTag` | [product-tags](https://developers.shoper.pl/developers/api/resources/product-tags) |
 | `progress` | [progresses](https://developers.shoper.pl/developers/api/resources/progresses) |

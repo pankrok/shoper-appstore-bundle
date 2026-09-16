@@ -81,13 +81,82 @@ class ResourceModel extends RequestModel implements ResourceInterface
         return $this->page;
     }
 
+    /**
+     * Starting record index; when set it is sent instead of "page".
+     */
+    public function setOffset(?int $offset): static
+    {
+        if (null !== $offset && $offset < 0) {
+            throw new \InvalidArgumentException('Offset must be a non-negative integer.');
+        }
+        $this->offset = $offset;
+
+        return $this;
+    }
+
+    public function getOffset(): ?int
+    {
+        return $this->offset;
+    }
+
+    /**
+     * Parent object ID for sub-resources such as "collections/{parent}/products".
+     */
+    public function setParent(int $parentId): static
+    {
+        $this->parentId = $parentId;
+
+        return $this;
+    }
+
+    public function getParent(): ?int
+    {
+        return $this->parentId;
+    }
+
+    /**
+     * Walks every page of the collection and yields single objects.
+     * Honours the configured filters, order and limit; starts at the current page.
+     * Not available in bulk mode.
+     *
+     * @return \Generator<int, array>
+     */
+    public function iterate(): \Generator
+    {
+        if ($this->bulk) {
+            throw new \LogicException('iterate() cannot be used on a bulk resource.');
+        }
+
+        $startPage = $this->page;
+        $offset    = $this->offset;
+        $this->offset = null;
+
+        try {
+            $page = $startPage;
+            do {
+                $this->page = $page;
+                $response   = $this->get();
+
+                foreach ($response->getList() as $item) {
+                    yield $item;
+                }
+
+                $pages = $response->getPages();
+                ++$page;
+            } while (null !== $pages && $page <= $pages);
+        } finally {
+            $this->page   = $startPage;
+            $this->offset = $offset;
+        }
+    }
+
     public function get(array|int|null $body = null): ResponseModel|array
     {
         if (!empty($body) && !is_int($body)) {
             $this->setBody($body);
         }
 
-        $url = is_int($body) ? $this->url . '/' . $body : $this->url;
+        $url = is_int($body) ? $this->baseUrl() . '/' . $body : $this->baseUrl();
 
         if ($this->bulk) {
             return $this->prepareBulk('GET', $url);
@@ -104,7 +173,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
 
         $url = (isset($this->object) && $this->url === 'metafields')
             ? $this->url . '/' . $this->object
-            : $this->url;
+            : $this->baseUrl();
 
         if ($this->bulk) {
             return $this->prepareBulk('POST', $url);
@@ -119,7 +188,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
             $this->setBody($body);
         }
 
-        $url = $this->url . '/' . $id;
+        $url = $this->baseUrl() . '/' . $id;
 
         if ($this->bulk) {
             return $this->prepareBulk('PUT', $url);
@@ -134,7 +203,7 @@ class ResourceModel extends RequestModel implements ResourceInterface
             $this->setBody($body);
         }
 
-        $url = is_int($body) ? $this->url . '/' . $body : $this->url;
+        $url = is_int($body) ? $this->baseUrl() . '/' . $body : $this->baseUrl();
 
         if ($this->bulk) {
             return $this->prepareBulk('DELETE', $url);

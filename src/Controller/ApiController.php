@@ -5,6 +5,8 @@ namespace PanKrok\ShoperAppstoreBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
+use PanKrok\ShoperAppstoreBundle\Controller\API\Client\OAuth;
+use PanKrok\ShoperAppstoreBundle\Entity\AccessTokens;
 use PanKrok\ShoperAppstoreBundle\Entity\Shops;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -80,9 +82,7 @@ class ApiController
             'options'    => $this->apiOptions,
             'entrypoint' => $this->shopUrl,
         ]);
-        $this->client->setToken($token->getAccessToken());
-        $this->client->setRefreshToken($token->getRefreshToken());
-        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        $this->bindTokenToClient($token);
 
         if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
             $this->performTokenRefresh($token);
@@ -102,9 +102,7 @@ class ApiController
             'options'    => $this->apiOptions,
             'entrypoint' => $this->shopUrl,
         ]);
-        $this->client->setToken($token->getAccessToken());
-        $this->client->setRefreshToken($token->getRefreshToken());
-        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        $this->bindTokenToClient($token);
 
         if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
             $this->performTokenRefresh($token);
@@ -118,7 +116,8 @@ class ApiController
     public function useBasicAuth(?string $url = null, array $basicAuth = []): BearerInterface
     {
         if (!empty($basicAuth)) {
-            $this->apiOptions = $basicAuth;
+            // override credentials only; keep rateLimit & co. from the bundle config
+            $this->apiOptions = array_merge($this->apiOptions, $basicAuth);
         }
 
         if ($url !== null) {
@@ -299,16 +298,31 @@ class ApiController
         return hash_equals($hash, $sentHash);
     }
 
-    private function performTokenRefresh(object $token): void
+    /**
+     * Loads the stored token into the OAuth client and wires the persistence
+     * callback used when the client refreshes the token on its own (401 recovery).
+     */
+    private function bindTokenToClient(AccessTokens $token): void
     {
-        $refreshed = $this->client->refresh()->toArray();
+        $this->client->setToken($token->getAccessToken());
+        $this->client->setRefreshToken($token->getRefreshToken());
+        $this->client->setExpired($token->getExpiresAt()->getTimestamp());
+        $this->client->setOnTokenRefreshed(fn(array $data) => $this->persistRefreshedToken($token, $data));
+    }
 
-        $expiresIn = isset($refreshed['expires_in']) ? (int) $refreshed['expires_in'] : 7776000;
+    private function performTokenRefresh(AccessTokens $token): void
+    {
+        $this->persistRefreshedToken($token, $this->client->refresh()->toArray());
+    }
+
+    private function persistRefreshedToken(AccessTokens $token, array $refreshed): void
+    {
+        $expiresIn = isset($refreshed['expires_in']) ? (int) $refreshed['expires_in'] : OAuth::DEFAULT_EXPIRES_IN;
         $token->setExpiresAt(new \DateTimeImmutable('@' . (time() + $expiresIn)));
         $token->setCreatedAt(new \DateTimeImmutable('now'));
         $token->setAccessToken($refreshed['access_token']);
         $token->setRefreshToken($refreshed['refresh_token']);
-        $this->em->flush($token);
+        $this->em->flush();
 
         $this->client->setToken($token->getAccessToken());
         $this->client->setRefreshToken($token->getRefreshToken());

@@ -12,6 +12,11 @@ interface ResourceInterface
     public function getLimit(): int;
     public function setPage(int $page): static;
     public function getPage(): int;
+    public function setOffset(?int $offset): static;
+    public function getOffset(): ?int;
+    public function setParent(int $parentId): static;
+    public function getParent(): ?int;
+    public function iterate(): \Generator;
     public function get(array|int|null $body = null): ResponseModel|array;
     public function post(array $body = []): ResponseModel|array;
     public function put(int $id, array $body): ResponseModel|array;

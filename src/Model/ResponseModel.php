@@ -61,6 +61,54 @@ class ResponseModel
         return $this->toArray();
     }
 
+    /**
+     * True when the body is a paginated collection ({count, pages, page, list}).
+     */
+    public function isCollection(): bool
+    {
+        $data = $this->toArray();
+
+        return isset($data['list']) && is_array($data['list']) && array_key_exists('count', $data);
+    }
+
+    /**
+     * Objects of a collection response; an empty array for single-object responses.
+     */
+    public function getList(): array
+    {
+        return $this->toArray()['list'] ?? [];
+    }
+
+    /**
+     * Total number of objects matching the request (all pages), or null for non-collections.
+     */
+    public function getCount(): ?int
+    {
+        $data = $this->toArray();
+
+        return isset($data['count']) ? (int) $data['count'] : null;
+    }
+
+    /**
+     * Total number of pages, or null for non-collections.
+     */
+    public function getPages(): ?int
+    {
+        $data = $this->toArray();
+
+        return isset($data['pages']) ? (int) $data['pages'] : null;
+    }
+
+    /**
+     * Index of the returned page (1-based), or null for non-collections.
+     */
+    public function getPage(): ?int
+    {
+        $data = $this->toArray();
+
+        return isset($data['page']) ? (int) $data['page'] : null;
+    }
+
     public function getAll(): array
     {
         return [

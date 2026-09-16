@@ -81,6 +81,16 @@ if ($api->isOAuthMode()) { ... }
 
 ---
 
+## Resilience
+
+The HTTP client behind every resource handles the Shoper API quota and token lifecycle on its own:
+
+- **Leaky-bucket throttling** — every response carries `X-SHOP-API-CALLS`, `X-SHOP-API-LIMIT` and `X-SHOP-API-BANDWIDTH`. When the bucket is full, the client waits before the next request instead of provoking a `429`.
+- **Retry on 429** — `Too many requests` responses are retried after the `Retry-After` delay (up to `rateLimit.maxRetries`, default 3). Once exhausted, `ShoperApiException` with status 429 is thrown.
+- **Token refresh on 401** — in OAuth mode a `401` triggers one `refresh_token` exchange, the new token is persisted to `AccessTokens`, and the original request is retried. A second `401` is thrown as `ShoperApiException`.
+
+Both quota behaviours are configurable (see README → Configuration → `rateLimit`). The last reported quota values are available via `$api->getHttpClient()->getRateLimitState()`.
+
 ## Deprecated methods
 
 The following method names were used in versions prior to 1.2.0. They are kept as aliases and will trigger `E_USER_DEPRECATED`. Migrate to the new names listed above.
