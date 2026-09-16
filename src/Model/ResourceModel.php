@@ -6,8 +6,12 @@ class ResourceModel extends RequestModel implements ResourceInterface
 {
     public const MAX_LIMIT = 50;
 
-    public function setFilters(array $filters): static
+    public function setFilters(array|Filter $filters): static
     {
+        if ($filters instanceof Filter) {
+            $filters = $filters->toArray();
+        }
+
         $this->filters = json_encode($filters);
 
         return $this;

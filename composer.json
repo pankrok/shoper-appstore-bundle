@@ -1,7 +1,7 @@
 {
     "name": "pankrok/shoper-appstore-bundle",
     "type": "symfony-bundle",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "description": "This bundle provides Shoper appstore SDK",
     "keywords": ["shoper", "appstore", "api"],
     "license": "MIT",

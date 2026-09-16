@@ -21,6 +21,83 @@ $api->product->put(42, ['stock' => ['price' => 19.99]]);
 $api->product->delete(42);
 ```
 
+### Pagination
+
+Collection responses are `{count, pages, page, list}`. `ResponseModel` exposes them directly:
+
+```php
+$response = $api->product->setLimit(50)->setPage(2)->get();
+
+$response->getList();   // array of objects on this page
+$response->getCount();  // total matching objects
+$response->getPages();  // total pages
+$response->getPage();   // current page (1-based)
+```
+
+`iterate()` walks every page for you and yields single objects. Filters, order and limit are honoured; the client's rate-limit handling keeps you under the shop's quota:
+
+```php
+foreach ($api->product->setFilters(['stock.active' => 1])->setLimit(50)->iterate() as $product) {
+    // $product is one array from "list"
+}
+```
+
+Use `setOffset($n)` instead of `setPage()` when you need a record index — it replaces `page` in the query.
+
+### Filters
+
+`setFilters()` accepts the documented array syntax or a `Filter` builder, which makes operators explicit and merges several conditions on one field:
+
+```php
+use PanKrok\ShoperAppstoreBundle\Model\Filter;
+use PanKrok\ShoperAppstoreBundle\Model\Resource\Product;
+
+$products = $api->product
+    ->setFilters(
+        Filter::create()
+            ->eq('translations.pl_PL.active', true)
+            ->like('translations.pl_PL.name', 'z%')      // "%" is the wildcard
+            ->between('stock.price', 10, 20)             // >= 10 AND <= 20
+            ->in('category_id', [3, 4])
+            ->neq('type', Product::TYPE_BUNDLE)
+    )
+    ->iterate();
+```
+
+Available: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `between`, `like`, `notLike`, `in`, `notIn`, plus `where($field, $operator, $value)` for raw operator names (`~` / `!~` aliases are accepted). Unknown operators throw. Nested fields use dot notation (`translations.pl_PL.name`).
+
+### Sub-resources
+
+Resources nested under a parent object need `setParent($id)` before the request:
+
+```php
+$api->collectionProduct->setParent($collectionId)->get();
+$api->collectionProduct->setParent($collectionId)->put($productId, ['position' => 3]);
+$api->paymentChannel->setParent($paymentId)->get();
+```
+
+Calling a sub-resource without a parent throws `LogicException`.
+
+### Domain constants
+
+Enum-like fields documented by Shoper are exposed as constants on the resource classes:
+
+| Class | Constants |
+|---|---|
+| `Product` | `TYPE_PRODUCT`, `TYPE_BUNDLE`, `WEIGHT_TYPE_NONE / NEW / ADD / SUBTRACT` |
+| `Status` | `TYPE_NEW`, `TYPE_OPENED`, `TYPE_CLOSED`, `TYPE_NOT_COMPLETED` |
+| `Order` | `STATUS_TYPE_*` (aliases of `Status::TYPE_*`), `ORIGIN_SHOP / FACEBOOK / MOBILE / ALLEGRO / WEBAPI / ADMIN_PANEL / ADMIN_AUTHENTICATED / GOOGLE`, `ORIGIN_APILO_MIN..MAX` |
+| `Attribute` | `TYPE_TEXT`, `TYPE_CHECKBOX`, `TYPE_SELECT` |
+| `Shipping` | `DEPEND_ON_NONE / WEIGHT / ORDER_AMOUNT / PRODUCTS_QUANTITY / GAUGE_WEIGHT` |
+| `AdditionalField` | `TYPE_TEXT..TYPE_DESCRIPTION`, `LOCATE_*` bitmask (combine with `\|`) |
+| `Metafield` | `TYPE_INT / FLOAT / STRING / BLOB`, `OBJECT_*` for every documented object name, `OBJECTS` list |
+
+```php
+$open = $api->order->setFilters(Filter::create()->eq('status.type', Order::STATUS_TYPE_OPENED))->get();
+
+$api->metafield->setObject(Metafield::OBJECT_PRODUCT)->get();
+```
+
 ## Available resources
 
 | Property name | Shoper API docs |

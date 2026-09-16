@@ -4,7 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\Model;
 
 interface ResourceInterface
 {
-    public function setFilters(array $filters): static;
+    public function setFilters(array|Filter $filters): static;
     public function getFilters(): array;
     public function setOrder(string $order): static;
     public function getOrder(): array;
