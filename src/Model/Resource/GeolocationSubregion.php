@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class GeolocationSubregion extends ResourceModel
 {
-    protected $url = 'geolocation-subregions';
+    protected string $url = 'geolocation-subregions';
 }

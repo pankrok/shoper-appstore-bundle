@@ -18,8 +18,10 @@
     </php>
 
     <testsuites>
-        <testsuite name="Project Test Suite">
+        <testsuite name="Bundle Test Suite">
             <directory>tests</directory>
+            <!-- legacy kernel/DB-backed tests written against the pre-2.0 namespace; not runnable -->
+            <exclude>tests/Service</exclude>
         </testsuite>
     </testsuites>
 

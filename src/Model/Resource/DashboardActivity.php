@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class DashboardActivity extends ResourceModel
 {
-    protected $url = 'dashboard-activities';
+    protected string $url = 'dashboard-activities';
 }

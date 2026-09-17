@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Subscriber extends ResourceModel
 {
-    protected $url = 'subscribers';
+    protected string $url = 'subscribers';
 }

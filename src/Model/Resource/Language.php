@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Language extends ResourceModel
 {
-    protected $url = 'languages';
+    protected string $url = 'languages';
 }

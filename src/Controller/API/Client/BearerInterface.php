@@ -15,4 +15,7 @@ interface BearerInterface
     public function getResponse(): ResponseInterface;
     public function setToken(string $token): void;
     public function getToken(): ?string;
+    public function setOnTokenRefreshed(?callable $callback): void;
+    /** @return array{calls: ?int, limit: ?int, bandwidth: ?int} */
+    public function getRateLimitState(): array;
 }

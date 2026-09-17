@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Progress extends ResourceModel
 {
-    protected $url = 'progresses';
+    protected string $url = 'progresses';
 }

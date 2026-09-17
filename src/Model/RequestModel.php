@@ -6,13 +6,20 @@ use PanKrok\ShoperAppstoreBundle\Controller\API\Client\BearerInterface;
 
 class RequestModel
 {
+    /**
+     * Placeholder in $url for sub-resources, e.g. "collections/{parent}/products".
+     */
+    public const PARENT_PLACEHOLDER = '{parent}';
+
     protected BearerInterface $client;
     protected mixed $bulk = false;
     protected array $body = [];
     protected ?string $filters = null;
     protected ?array $order = null;
     protected int $limit = 20;
-    protected int $page = 0;
+    protected int $page = 1;
+    protected ?int $offset = null;
+    protected ?int $parentId = null;
     protected ?string $method = null;
     protected string $url = '';
 
@@ -48,33 +55,67 @@ class RequestModel
         return $this->getClient();
     }
 
-    protected function prepareBulk(string $method): array
+    /**
+     * Resource path with the parent ID substituted for sub-resources.
+     *
+     * @throws \LogicException when the resource needs a parent ID that was not set
+     */
+    protected function baseUrl(): string
     {
-        return [
+        if (!str_contains($this->url, self::PARENT_PLACEHOLDER)) {
+            return $this->url;
+        }
+
+        if (null === $this->parentId) {
+            throw new \LogicException(sprintf(
+                'Resource "%s" is a sub-resource; call setParent($id) before making a request.',
+                static::class
+            ));
+        }
+
+        return str_replace(self::PARENT_PLACEHOLDER, (string) $this->parentId, $this->url);
+    }
+
+    /**
+     * Query-string parameters for collection requests.
+     * "offset" replaces "page" when set (API semantics).
+     */
+    protected function listParams(): array
+    {
+        return array_filter([
+            'page'    => null === $this->offset ? $this->page : null,
+            'offset'  => $this->offset,
+            'limit'   => $this->limit,
+            'filters' => $this->filters,
+            'order'   => $this->order,
+        ], fn($v) => $v !== null);
+    }
+
+    protected function prepareBulk(string $method, ?string $urlOverride = null): array
+    {
+        $call = [
             'method' => $method,
-            'path'   => '/webapi/rest/' . $this->url,
-            'params' => array_filter([
-                'page'    => $this->page,
-                'limit'   => $this->limit,
-                'filters' => $this->filters,
-                'order'   => $this->order,
-            ], fn($v) => $v !== null),
-            'body'   => $this->body,
+            'path'   => '/webapi/rest/' . ($urlOverride ?? $this->baseUrl()),
         ];
+
+        if ('GET' === $method) {
+            $call['params'] = $this->listParams();
+        }
+
+        if ([] !== $this->body) {
+            $call['body'] = $this->body;
+        }
+
+        return $call;
     }
 
     protected function prepareRequest(string $method, ?string $urlOverride = null): array
     {
         return [
             'method'  => $method,
-            'url'     => $urlOverride ?? $this->url,
+            'url'     => $urlOverride ?? $this->baseUrl(),
             'options' => [
-                'query' => array_filter([
-                    'page'    => $this->page,
-                    'limit'   => $this->limit,
-                    'filters' => $this->filters,
-                    'order'   => $this->order,
-                ], fn($v) => $v !== null),
+                'query' => $this->listParams(),
                 'json'  => $this->body,
             ],
         ];

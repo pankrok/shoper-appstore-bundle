@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class AttributeGroup extends ResourceModel
 {
-    protected $url = 'attribute-groups';
+    protected string $url = 'attribute-groups';
 }

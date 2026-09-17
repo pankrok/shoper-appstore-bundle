@@ -2,7 +2,7 @@
 
 Unofficial Symfony 7.4 bundle for building applications on the [Shoper Appstore](https://developers.shoper.pl/developers/appstore). Provides OAuth integration, REST API client, billing and webhook handling, Twig helpers, and Maker commands for scaffolding controllers. Not official Shoper software.
 
-Current version: **2.0.0**
+Current version: **2.2.0**
 
 ## Table of contents
 
@@ -61,6 +61,16 @@ shoper_appstore:
     jssdk: https://dcsaascdn.net/js/dc-sdk-1.0.5.min.js
 ```
 
+### Rate limiting (optional)
+
+```yaml
+shoper_appstore:
+    # ...
+    rateLimit:
+        maxRetries: 3   # retries after HTTP 429, honouring Retry-After (0 disables)
+        throttle: true  # wait when the shop reports a full X-SHOP-API-* bucket
+```
+
 ## Token refresh CRON
 
 Run the token refresh command every 4 hours to keep OAuth tokens valid:
@@ -109,6 +119,15 @@ try {
     // $e->getStatusCode()             → 401
     throw $e;
 }
+```
+
+## Tests
+
+The suite is pure unit tests (no kernel, database or network — HTTP goes through `MockHttpClient`):
+
+```bash
+composer install
+vendor/bin/phpunit
 ```
 
 ## Documentation

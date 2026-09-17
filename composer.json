@@ -1,7 +1,7 @@
 {
     "name": "pankrok/shoper-appstore-bundle",
     "type": "symfony-bundle",
-    "version": "2.0.1",
+    "version": "2.2.0",
     "description": "This bundle provides Shoper appstore SDK",
     "keywords": ["shoper", "appstore", "api"],
     "license": "MIT",
@@ -19,7 +19,7 @@
         "symfony/console": "7.4.*",
         "symfony/framework-bundle": "7.4.*",
         "symfony/http-client": "7.4.*",
-        "symfony/monolog-bundle": "^3.7",
+        "symfony/monolog-bundle": "^3.7|^4.0",
         "symfony/twig-bundle": "7.4.*",
         "symfony/yaml": "7.4.*",
         "twig/extra-bundle": "^3.12",
@@ -30,7 +30,7 @@
         "symfony/debug-bundle": "7.4.*",
         "symfony/dotenv": "7.4.*",
         "symfony/maker-bundle": "^1.60",
-        "symfony/phpunit-bridge": "7.4.*",
+        "symfony/phpunit-bridge": "^7.4|^8.0",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     },

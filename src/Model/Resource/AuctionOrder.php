@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class AuctionOrder extends ResourceModel
 {
-    protected $url = 'auction-orders';
+    protected string $url = 'auction-orders';
 }

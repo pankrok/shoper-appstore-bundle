@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class UserAddress extends ResourceModel
 {
-    protected $url = 'user-addresses';
+    protected string $url = 'user-addresses';
 }

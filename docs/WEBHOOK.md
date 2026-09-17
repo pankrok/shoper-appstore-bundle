@@ -14,12 +14,15 @@ The maker asks for a controller name and an optional webhook secret. The secret 
 
 `WebhookController::checksum()` verifies the `X-Webhook-SHA1` header against the request body and the shop's license key. On success it initialises `ApiController` for that shop — ready to use via `getApiClient()`.
 
+On a missing header, empty body or signature mismatch it throws `InvalidWebhookChecksumException` (a `RuntimeException`). Respond with `403` in that case — do not process the payload.
+
 ## Example
 
 ```php
 namespace App\Controller;
 
 use PanKrok\ShoperAppstoreBundle\Controller\WebhookController as Webhook;
+use PanKrok\ShoperAppstoreBundle\Exception\InvalidWebhookChecksumException;
 use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,6 +45,10 @@ class OrderWebhookController extends AbstractController
             // $order = $api->order->get($data['object_id'])->getBodyArray();
 
             return new Response('', Response::HTTP_OK);
+        } catch (InvalidWebhookChecksumException $e) {
+            $logger->warning('Webhook rejected: ' . $e->getMessage());
+
+            return new Response('', Response::HTTP_FORBIDDEN);
         } catch (ShoperApiException $e) {
             $logger->error('Webhook API error: ' . $e->getMessage(), [
                 'error' => $e->getShoperError(),

@@ -3,6 +3,7 @@
 namespace <?php echo $namespace; ?>;
 
 use PanKrok\ShoperAppstoreBundle\Controller\WebhookController;
+use PanKrok\ShoperAppstoreBundle\Exception\InvalidWebhookChecksumException;
 use PanKrok\ShoperAppstoreBundle\Exception\ShoperApiException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,6 +24,10 @@ class <?php echo $class_name; ?> extends AbstractController
             // Example: $products = $api->product->get()->getBodyArray();
 
             return new Response('', Response::HTTP_OK);
+        } catch (InvalidWebhookChecksumException $e) {
+            $logger->warning('Webhook rejected: ' . $e->getMessage());
+
+            return new Response('', Response::HTTP_FORBIDDEN);
         } catch (ShoperApiException $e) {
             $logger->error('Webhook API error: ' . $e->getMessage(), ['error' => $e->getShoperError()]);
 

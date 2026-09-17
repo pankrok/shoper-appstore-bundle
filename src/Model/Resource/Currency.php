@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Currency extends ResourceModel
 {
-    protected $url = 'currencies';
+    protected string $url = 'currencies';
 }

@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class CategoriesTree extends ResourceModel
 {
-    protected $url = 'categories-tree';
+    protected string $url = 'categories-tree';
 }

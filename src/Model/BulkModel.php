@@ -4,7 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\Model;
 
 final class BulkModel extends RequestModel
 {
-    protected $url = 'bulk';
+    protected string $url = 'bulk';
     private $bulkLimit = 25;
 
     public function __get($property)
@@ -53,7 +53,8 @@ final class BulkModel extends RequestModel
             $id = $count;
         }
 
-        $this->body[$count] = array_merge(['id' => $id], $this->body[$count]);
+        // explicit id must win over the auto-assigned index
+        $this->body[$count] = array_merge($this->body[$count], ['id' => $id]);
 
         return $this;
     }

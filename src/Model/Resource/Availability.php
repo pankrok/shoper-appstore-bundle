@@ -6,5 +6,5 @@ use PanKrok\ShoperAppstoreBundle\Model\ResourceModel;
 
 final class Availability extends ResourceModel
 {
-    protected $url = 'availabilities';
+    protected string $url = 'availabilities';
 }
