@@ -78,10 +78,7 @@ class ApiController
         $this->shopUrl = $this->activeShop->getShopUrl();
         $token = $this->activeShop->getAccessTokens();
 
-        $this->client = Client::factory(Client::ADAPTER_OAUTH, [
-            'options'    => $this->apiOptions,
-            'entrypoint' => $this->shopUrl,
-        ]);
+        $this->client = $this->createClient(Client::ADAPTER_OAUTH);
         $this->bindTokenToClient($token);
 
         if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
@@ -98,10 +95,7 @@ class ApiController
         $this->shopUrl = $shop->getShopUrl();
         $token = $shop->getAccessTokens();
 
-        $this->client = Client::factory(Client::ADAPTER_OAUTH, [
-            'options'    => $this->apiOptions,
-            'entrypoint' => $this->shopUrl,
-        ]);
+        $this->client = $this->createClient(Client::ADAPTER_OAUTH);
         $this->bindTokenToClient($token);
 
         if ($this->client->isExpiredFromTimestamp(time() + 60 * 60 * 24)) {
@@ -124,10 +118,7 @@ class ApiController
             $this->shopUrl = $url;
         }
 
-        $this->client = Client::factory(Client::ADAPTER_BASIC_AUTH, [
-            'options'    => $this->apiOptions,
-            'entrypoint' => $this->shopUrl,
-        ]);
+        $this->client = $this->createClient(Client::ADAPTER_BASIC_AUTH);
 
         return $this->client;
     }
@@ -272,6 +263,17 @@ class ApiController
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Builds an API client adapter for the current shop URL and options; overridable for tests.
+     */
+    protected function createClient(string $adapter): BearerInterface
+    {
+        return Client::factory($adapter, [
+            'options'    => $this->apiOptions,
+            'entrypoint' => $this->shopUrl,
+        ]);
+    }
 
     private function verifyHash(bool $checkHash): bool
     {

@@ -56,6 +56,10 @@ class OAuth extends Bearer
         }
 
         $token = $response->toArray();
+        if (empty($token['access_token'])) {
+            throw new ShoperApiException(502, 'invalid_token_response', 'OAuth token endpoint returned no access_token', $response->getContent(false));
+        }
+
         $this->setToken($token['access_token']);
         if (isset($token['refresh_token'])) {
             $this->setRefreshToken($token['refresh_token']);

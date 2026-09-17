@@ -121,6 +121,15 @@ try {
 }
 ```
 
+## Tests
+
+The suite is pure unit tests (no kernel, database or network — HTTP goes through `MockHttpClient`):
+
+```bash
+composer install
+vendor/bin/phpunit
+```
+
 ## Documentation
 
 | Topic | File |

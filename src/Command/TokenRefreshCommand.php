@@ -43,7 +43,7 @@ class TokenRefreshCommand extends Command
         $threshold = new \DateTimeImmutable('@' . (time() + $hoursAhead * 3600));
 
         $criteria = Criteria::create()
-            ->where(Criteria::expr()->lt('expiresAt', $threshold))
+            ->where(Criteria::expr()->lt('expires_at', $threshold))
             ->setMaxResults($limit);
 
         $tokens = $this->accessTokensRepository->matching($criteria);

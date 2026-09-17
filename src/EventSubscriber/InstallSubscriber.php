@@ -4,6 +4,7 @@ namespace PanKrok\ShoperAppstoreBundle\EventSubscriber;
 
 use Doctrine\ORM\EntityManagerInterface;
 use PanKrok\ShoperAppstoreBundle\Controller\API\Client;
+use PanKrok\ShoperAppstoreBundle\Controller\API\Client\OAuth;
 use PanKrok\ShoperAppstoreBundle\Entity\AccessTokens;
 use PanKrok\ShoperAppstoreBundle\Entity\Shops;
 use PanKrok\ShoperAppstoreBundle\Events\InstallEvent;
@@ -11,14 +12,14 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use PanKrok\ShoperAppstoreBundle\Repository\ShopsRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class InstallSubscriber implements EventSubscriberInterface
 {
-    protected $em;
-    protected $tokensEntity;
-    protected $shopsRepository;
-    protected $dispatcher;
+    protected EntityManagerInterface $em;
+    protected ShopsRepository $shopsRepository;
+    protected EventDispatcherInterface $dispatcher;
+    protected array $config;
+    protected ?OAuth $client = null;
 
     public function __construct(
         EventDispatcherInterface $dispatcher,
@@ -40,7 +41,7 @@ class InstallSubscriber implements EventSubscriberInterface
             'entrypoint' => $payload['shop_url'],
         ];
 
-        $this->client = Client::factory(Client::ADAPTER_OAUTH, $options);
+        $this->client = $this->createClient($options);
         $response = $this->client->auth($payload['auth_code'])->toArray();
         if (!isset($response['access_token'])) {
             throw new \Exception('Can\'t obtain access token');
@@ -80,6 +81,14 @@ class InstallSubscriber implements EventSubscriberInterface
         $eventName = '\\PanKrok\\ShoperAppstoreBundle\\Events\\PostInstallEvent';
         $event = new $eventName($shop);
         $this->dispatcher->dispatch($event, $eventName::NAME);
+    }
+
+    /**
+     * Builds the OAuth client used to exchange the auth code; overridable for tests.
+     */
+    protected function createClient(array $options): OAuth
+    {
+        return Client::factory(Client::ADAPTER_OAUTH, $options);
     }
 
     public static function getSubscribedEvents(): array
